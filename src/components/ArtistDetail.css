@@ -1,0 +1,93 @@
+/* ===== ARTIST DETAIL ===== */
+.artist {
+  padding-bottom: 24px;
+}
+
+.artist__hero {
+  position: relative;
+  display: flex;
+  gap: 28px;
+  align-items: flex-end;
+  padding: 32px 0 24px;
+}
+
+.artist__hero-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: var(--radius-lg);
+}
+
+.artist__image {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.artist__info {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.artist__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+}
+
+.artist__name {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 4px 0 6px;
+  line-height: 1.1;
+}
+
+.artist__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.artist__dot {
+  color: var(--text-subdued);
+}
+
+.artist__desc {
+  font-size: 12px;
+  color: var(--text-subdued);
+  line-height: 1.5;
+  max-width: 500px;
+  margin-bottom: 16px;
+}
+
+.artist__play-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 24px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: #0C0F14;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.artist__play-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px var(--accent-glow);
+}

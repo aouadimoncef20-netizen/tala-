@@ -1,0 +1,157 @@
+/* ===== QUEUE PANEL ===== */
+.queue-panel {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-top: 12px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.queue-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.queue-panel__title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-subdued);
+}
+
+.queue-panel__clear {
+  font-size: 10px;
+  color: var(--text-subdued);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: var(--transition);
+}
+
+.queue-panel__clear:hover {
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+
+/* Current track */
+.queue-panel__current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+}
+
+.queue-panel__current-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.queue-panel__current-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.queue-panel__current-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.queue-panel__current-artist {
+  font-size: 10px;
+  color: var(--text-subdued);
+}
+
+/* Queue items */
+.queue-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.queue-panel__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.queue-panel__item:hover {
+  background: var(--bg-card);
+}
+
+.queue-panel__item-num {
+  width: 20px;
+  font-size: 10px;
+  color: var(--text-subdued);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.queue-panel__item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.queue-panel__item-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.queue-panel__item-artist {
+  font-size: 9px;
+  color: var(--text-subdued);
+}
+
+.queue-panel__item-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.queue-panel__item:hover .queue-panel__item-actions {
+  opacity: 1;
+}
+
+.queue-panel__item-btn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: none;
+  color: var(--text-subdued);
+  cursor: pointer;
+  font-size: 9px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.queue-panel__item-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}

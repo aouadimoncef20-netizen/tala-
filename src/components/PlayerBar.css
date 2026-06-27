@@ -1,0 +1,264 @@
+/* ===== PLAYER BAR ===== */
+/* Distinctive design — NOT Spotify-like */
+
+.player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  z-index: 200;
+  user-select: none;
+}
+
+.player__idle {
+  height: var(--player-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-subdued);
+  font-size: 12px;
+}
+
+.player__idle-icon {
+  font-size: 16px;
+  opacity: 0.5;
+}
+
+/* Top progress edge */
+.player__progress-edge {
+  height: 2px;
+  background: var(--border);
+  cursor: pointer;
+  position: relative;
+}
+
+.player__progress-edge-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-amber));
+  transition: width 0.15s linear;
+  border-radius: 0 1px 1px 0;
+}
+
+.player__progress-edge:hover {
+  height: 3px;
+}
+
+/* Body */
+.player__body {
+  height: var(--player-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  gap: 12px;
+}
+
+/* Left */
+.player__left {
+  width: 25%;
+  min-width: 180px;
+  max-width: 280px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player__img {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.player__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player__artist {
+  font-size: 10px;
+  color: var(--text-subdued);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player__live {
+  font-size: 7px;
+  font-weight: 700;
+  color: var(--accent-teal);
+  background: rgba(74, 155, 170, 0.15);
+  padding: 1px 4px;
+  border-radius: 2px;
+  animation: pulse 1.5s infinite;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.player__btn {
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: var(--transition);
+  flex-shrink: 0;
+  color: var(--text-subdued);
+}
+
+.player__btn:hover {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+}
+
+/* Center */
+.player__center {
+  flex: 1;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.player__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.player__ctrl {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  border-radius: 4px;
+}
+
+.player__ctrl:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+
+.player__ctrl svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.player__speed {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.player__play {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: #0C0F14;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.player__play:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.player__play svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.player__time-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.player__time {
+  font-size: 9px;
+  color: var(--text-subdued);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Right */
+.player__right {
+  width: 15%;
+  min-width: 80px;
+  max-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.player__volume-wrap {
+  width: 100%;
+}
+
+.player__volume-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.player__volume-bar:hover {
+  height: 4px;
+}
+
+.player__volume-fill {
+  height: 100%;
+  background: var(--text-secondary);
+  border-radius: 2px;
+  transition: width 0.1s ease;
+}
+
+.player__volume-bar:hover .player__volume-fill {
+  background: var(--accent-amber);
+}
+
+.player__sleep-badge {
+  font-size: 9px;
+  color: var(--accent-amber);
+  margin-right: 6px;
+  white-space: nowrap;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
