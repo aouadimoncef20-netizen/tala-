@@ -23,12 +23,21 @@
   max-width: 360px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   pointer-events: auto;
-  animation: toastIn 0.3s ease;
+  animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toast--exiting {
+  animation: toastOut 0.25s ease forwards;
 }
 
 @keyframes toastIn {
-  from { opacity: 0; transform: translateX(40px); }
-  to { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translateX(40px) scale(0.95); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to { opacity: 0; transform: translateX(40px) scale(0.95); }
 }
 
 .toast__icon {

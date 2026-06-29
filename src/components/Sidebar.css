@@ -72,16 +72,33 @@
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   text-align: left;
   font-size: 13px;
   font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar__item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent-glow);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  border-radius: var(--radius-sm);
 }
 
 .sidebar__item:hover {
   background: var(--bg-card);
   color: var(--text-primary);
+  transform: translateX(2px);
+}
+
+.sidebar__item:active {
+  transform: translateX(0) scale(0.97);
 }
 
 .sidebar__item--active {
@@ -89,6 +106,7 @@
   color: var(--accent);
   font-weight: 600;
   border-right: 3px solid var(--accent);
+  box-shadow: inset 0 0 20px rgba(212, 135, 94, 0.06);
 }
 
 .sidebar__item-icon {
