@@ -1,110 +1,117 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import './App.css';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import MainContent from './components/MainContent';
 import PlayerBar from './components/PlayerBar';
+import MiniPlayer from './components/MiniPlayer';
 import FullPlayer from './components/FullPlayer';
 import PremiumView from './components/PremiumView';
-import Toast, { createToast } from './components/Toast';
+import Toast from './components/Toast';
 import { generateTone } from './components/LazyImage';
-import useLocalStorage from './hooks/useLocalStorage';
-
-const formatDuration = (ep) => {
-  if (ep?.duration) {
-    const parts = ep.duration.split(':').map(Number);
-    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    if (parts.length === 2) return parts[0] * 60 + parts[1];
-  }
-  return 1200;
-};
+import { generateRadioStream } from './data/recommendations';
+import usePlayerStore from './stores/playerStore';
+import useUIStore from './stores/uiStore';
+import useLibraryStore from './stores/libraryStore';
 
 const App = () => {
-  const [activeView, setActiveView] = useState('home');
-  const [currentTrack, setCurrentTrack] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [likedTracks, setLikedTracks] = useLocalStorage('tala_liked', []);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [simulatedTime, setSimulatedTime] = useState(0);
-  const [isSimulated, setIsSimulated] = useState(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1);
-  const [volume, setVolume] = useState(70);
-  const [isMuted, setIsMuted] = useState(false);
-  const [queue, setQueue] = useState([]);
-  const [selectedArtist, setSelectedArtist] = useState(null);
-  const [selectedAlbum, setSelectedAlbum] = useState(null);
-  const [showFullPlayer, setShowFullPlayer] = useState(false);
-  const [showPremium, setShowPremium] = useState(false);
-  const [toasts, setToasts] = useState([]);
-  const [theme, setTheme] = useLocalStorage('tala_theme', 'dark');
+  // --- Subscribe to slices from all stores ---
+  const currentTrack = usePlayerStore(s => s.currentTrack);
+  const isPlaying = usePlayerStore(s => s.isPlaying);
+  const isSimulated = usePlayerStore(s => s.isSimulated);
+  const playbackSpeed = usePlayerStore(s => s.playbackSpeed);
+  const volume = usePlayerStore(s => s.volume);
+  const isMuted = usePlayerStore(s => s.isMuted);
+  const showFullPlayer = usePlayerStore(s => s.showFullPlayer);
+  const isRadioMode = usePlayerStore(s => s.isRadioMode);
+  const setPlaying = usePlayerStore(s => s.setPlaying);
+  const setSimulated = usePlayerStore(s => s.setSimulated);
 
-  const handleToast = useCallback((type, title, message) => {
-    const toast = createToast(type, title, message);
-    setToasts(prev => [...prev, toast]);
-  }, []);
+  const sleepTimer = useUIStore(s => s.sleepTimer);
+  const setSleepTimer = useUIStore(s => s.setSleepTimer);
+  const cancelSleepTimer = useUIStore(s => s.cancelSleepTimer);
+  const showPremium = useUIStore(s => s.showPremium);
+  const setShowPremium = useUIStore(s => s.setShowPremium);
 
-  const removeToast = useCallback((id) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
+  const theme = useLibraryStore(s => s.theme);
 
-  // Sleep timer
-  const [sleepTimer, setSleepTimer] = useState(null); // remaining seconds or null
-  const [sleepOptions, setSleepOptions] = useState(false);
-  const sleepRef = useRef(null);
+  const isRadio = currentTrack?.type === 'radio';
 
-  useEffect(() => {
-    if (sleepTimer !== null && sleepTimer > 0 && isPlaying) {
-      sleepRef.current = setInterval(() => {
-        setSleepTimer(prev => {
-          if (prev <= 1) { clearInterval(sleepRef.current); setIsPlaying(false); return null; }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      clearInterval(sleepRef.current);
-    }
-    return () => clearInterval(sleepRef.current);
-  }, [sleepTimer, isPlaying]);
-
-  const handleSleepStart = (minutes) => {
-    setSleepTimer(minutes * 60);
-    setSleepOptions(false);
-  };
-
-  const handleSleepCancel = () => {
-    setSleepTimer(null);
-    setSleepOptions(false);
-    clearInterval(sleepRef.current);
-  };
-
+  // --- Refs ---
   const audioRef = useRef(null);
   const simRef = useRef(null);
   const toneUrlRef = useRef(null);
-  const isRadio = currentTrack?.type === 'radio';
+  const sleepRef = useRef(null);
+  const [scrolled, setScrolled] = React.useState(false);
 
-  // Audio element
+  // --- Audio element (one-time setup) ---
   useEffect(() => {
     const audio = new Audio();
     audio.crossOrigin = 'anonymous';
     audioRef.current = audio;
     const onEnded = () => {
-      if (queue.length > 0) {
-        const next = queue[0];
-        setQueue(prev => prev.slice(1));
-        setCurrentTrack(next);
-        setIsPlaying(true);
-        setSimulatedTime(0);
-        setCurrentTime(0);
+      const st = usePlayerStore.getState();
+      // If sleep timer triggered the stop, don't auto-play next
+      if (st.wasSleepTimerTriggered) {
+        usePlayerStore.setState({ wasSleepTimerTriggered: false, isPlaying: false });
+        return;
+      }
+      // Radio mode: play next from radio queue or generate more
+      if (st.isRadioMode) {
+        if (st.radioQueue.length > 0) {
+          const next = st.radioQueue[0];
+          usePlayerStore.setState({
+            currentTrack: next,
+            isPlaying: true,
+            radioQueue: st.radioQueue.slice(1),
+            simulatedTime: 0,
+            currentTime: 0,
+            isSimulated: true,
+          });
+        } else {
+          // Radio queue exhausted — generate more tracks
+          const seed = st.currentTrack?.artistId || 'khaled';
+          const moreTracks = generateRadioStream(
+            st.currentTrack?.id || 'track_khaled_0',
+            20
+          );
+          if (moreTracks.length > 0) {
+            const next = moreTracks[0];
+            usePlayerStore.setState({
+              currentTrack: next,
+              isPlaying: true,
+              radioQueue: moreTracks.slice(1),
+              simulatedTime: 0,
+              currentTime: 0,
+              isSimulated: true,
+            });
+          } else {
+            usePlayerStore.setState({ isPlaying: false, isRadioMode: false });
+          }
+        }
+        return;
+      }
+      // Normal queue mode
+      if (st.queue.length > 0) {
+        const next = st.queue[0];
+        usePlayerStore.setState({
+          currentTrack: next,
+          isPlaying: true,
+          queue: st.queue.slice(1),
+          simulatedTime: 0,
+          currentTime: 0,
+          isSimulated: true,
+        });
       } else {
-        setIsPlaying(false);
+        setPlaying(false);
       }
     };
     audio.addEventListener('ended', onEnded);
-    return () => { audio.pause(); if (toneUrlRef.current) URL.revokeObjectURL(toneUrlRef.current); };
-  }, [queue]);
+    return () => { audio.removeEventListener('ended', onEnded); audio.pause(); if (toneUrlRef.current) URL.revokeObjectURL(toneUrlRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Generate real audio tone for each track
+  // --- Generate real audio tone for each track ---
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -115,223 +122,162 @@ const App = () => {
       toneUrlRef.current = toneUrl;
       audio.src = toneUrl;
       audio.loop = true;
-      audio.play().then(() => setIsSimulated(false)).catch(() => setIsSimulated(true));
+      audio.play().then(() => setSimulated(false)).catch(() => setSimulated(true));
     } else if (isPlaying && currentTrack && isRadio) {
-      setIsSimulated(true);
+      setSimulated(true);
     } else {
       audio.pause();
     }
-  }, [isPlaying, currentTrack, isRadio]);
+  }, [isPlaying, currentTrack, isRadio, setSimulated]);
 
+  // --- Volume ---
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = isMuted ? 0 : volume / 100;
   }, [volume, isMuted]);
 
-  // Simulated playback
+  // --- Simulated playback (non-radio) ---
   useEffect(() => {
     if (isPlaying && currentTrack && isSimulated && !isRadio) {
-      const total = formatDuration(currentTrack);
       simRef.current = setInterval(() => {
-        setSimulatedTime(prev => {
-          if (prev >= total) { clearInterval(simRef.current); return total; }
-          return prev + (1 * playbackSpeed);
+        usePlayerStore.setState(s => {
+          const track = s.currentTrack;
+          const dur = track?.duration;
+          let total = 1200;
+          if (dur && dur !== 'Live') {
+            const parts = dur.split(':').map(Number);
+            total = parts.length === 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2]
+              : parts.length === 2 ? parts[0] * 60 + parts[1] : 1200;
+          }
+          return {
+            simulatedTime: s.simulatedTime >= total ? total : s.simulatedTime + (1 * s.playbackSpeed)
+          };
         });
       }, 1000);
-    } else { clearInterval(simRef.current); }
-    return () => clearInterval(simRef.current);
-  }, [isPlaying, currentTrack, isSimulated, playbackSpeed, isRadio]);
-
-  useEffect(() => {
-    if (isPlaying && currentTrack && isSimulated && isRadio) {
-      simRef.current = setInterval(() => setSimulatedTime(prev => (prev + (1 * playbackSpeed)) % 3600), 1000);
+    } else {
+      clearInterval(simRef.current);
     }
     return () => clearInterval(simRef.current);
   }, [isPlaying, currentTrack, isSimulated, playbackSpeed, isRadio]);
 
+  // --- Simulated playback (radio — wraps around) ---
   useEffect(() => {
-    setSimulatedTime(0); setCurrentTime(0); setIsSimulated(true);
+    if (isPlaying && currentTrack && isSimulated && isRadio) {
+      simRef.current = setInterval(() => {
+        usePlayerStore.setState(s => ({
+          simulatedTime: (s.simulatedTime + (1 * s.playbackSpeed)) % 3600
+        }));
+      }, 1000);
+    }
+    return () => clearInterval(simRef.current);
+  }, [isPlaying, currentTrack, isSimulated, playbackSpeed, isRadio]);
+
+  // --- Reset time on track change ---
+  useEffect(() => {
+    usePlayerStore.getState().resetTime();
   }, [currentTrack?.id]);
 
-  const getDisplayTime = () => isSimulated ? simulatedTime : currentTime;
-  const getDuration = () => isRadio ? 3600 : formatDuration(currentTrack);
-  const displayTime = getDisplayTime();
-  const duration = getDuration();
-  const progressPct = duration > 0 ? (displayTime / duration) * 100 : 0;
+  // --- Sleep Timer ---
+  const sleepTimerActive = sleepTimer !== null && sleepTimer > 0;
 
-  const handleSkip = (secs) => {
-    if (!currentTrack) return;
-    const total = formatDuration(currentTrack);
-    if (isSimulated) setSimulatedTime(prev => Math.max(0, Math.min(total, prev + secs)));
-    else setCurrentTime(prev => Math.max(0, Math.min(total, (prev || 0) + secs)));
-  };
-
-  const handlePlay = useCallback((track) => {
-    if (currentTrack?.id === track.id) { setIsPlaying(p => !p); return; }
-    setCurrentTrack(track);
-    setIsPlaying(true);
-    setSimulatedTime(0);
-    setCurrentTime(0);
-    setIsSimulated(true);
-  }, [currentTrack]);
-
-  const handleSeek = useCallback((pct) => {
-    const total = formatDuration(currentTrack);
-    const newTime = (pct / 100) * total;
-    if (isSimulated) setSimulatedTime(newTime);
-    else setCurrentTime(newTime);
-  }, [currentTrack, isSimulated]);
-
-  const handleToggleLike = useCallback((id) => {
-    setLikedTracks(prev => {
-      const isLiked = prev.includes(id);
-      const newVal = isLiked ? prev.filter(x => x !== id) : [...prev, id];
-      handleToast(isLiked ? 'info' : 'liked', isLiked ? 'Removed from likes' : 'Liked ♥', '');
-      return newVal;
-    });
-  }, [setLikedTracks]);
-
-  const handleAddToQueue = useCallback((track) => {
-    setQueue(prev => [...prev, track]);
-    handleToast('added', 'Added to queue', track?.title || '');
+  useEffect(() => {
+    if (sleepTimerActive && isPlaying) {
+      sleepRef.current = setInterval(() => {
+        const current = useUIStore.getState().sleepTimer;
+        if (current !== null && current <= 1) {
+          clearInterval(sleepRef.current);
+          usePlayerStore.setState({ wasSleepTimerTriggered: true });
+          setPlaying(false);
+          cancelSleepTimer();
+        } else if (current !== null) {
+          setSleepTimer(current - 1);
+        }
+      }, 1000);
+    } else {
+      clearInterval(sleepRef.current);
+    }
+    return () => clearInterval(sleepRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [sleepTimerActive, isPlaying]);
 
-  const handleOpenArtist = useCallback((id) => { setSelectedArtist(id); setActiveView('artist'); }, []);
-  const handleOpenAlbum = useCallback((id) => { setSelectedAlbum(id); setActiveView('album'); }, []);
-  const handleOpenAudiobook = useCallback(() => { setActiveView('audiobooks'); }, []);
-  const handleOpenProfile = useCallback(() => { setActiveView('profile'); }, []);
-  const handleOpenPremium = useCallback(() => { setShowPremium(true); }, []);
-
-  const handleSearch = useCallback((q) => {
-    setSearchQuery(q);
-    if (q.trim()) setActiveView('search');
-    else setActiveView('home');
-  }, []);
-
-  // Keyboard shortcuts
+  // --- Keyboard shortcuts ---
   useEffect(() => {
     const handleKey = (e) => {
       if (e.target.tagName === 'INPUT') return;
+      const store = usePlayerStore.getState();
       switch (e.code) {
-        case 'Space': e.preventDefault(); if (currentTrack) setIsPlaying(p => !p); break;
+        case 'Space':
+          e.preventDefault();
+          if (store.currentTrack) store.togglePlay();
+          break;
         case 'ArrowLeft':
           e.preventDefault();
-          if (!currentTrack) break;
-          setSimulatedTime(prev => Math.max(0, prev - 15));
+          if (store.currentTrack) store.skipTime(-15);
           break;
         case 'ArrowRight':
           e.preventDefault();
-          if (!currentTrack) break;
-          setSimulatedTime(prev => Math.min(formatDuration(currentTrack), prev + 30));
+          if (store.currentTrack) store.skipTime(15);
           break;
-        case 'KeyM': e.preventDefault(); setIsMuted(p => !p); break;
-        case 'Escape': setShowFullPlayer(false); break;
+        case 'KeyM':
+          break;
+        case 'Escape':
+          store.setShowFullPlayer(false);
+          break;
         default: break;
       }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTrack, showFullPlayer]);
+  }, []);
+
+  // --- Media Session API — lock screen / notification controls ---
+  useEffect(() => {
+    if (!currentTrack) return;
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: currentTrack.title,
+        artist: currentTrack.artist || currentTrack.podcastName || '',
+        album: '',
+        artwork: [{ src: currentTrack.image, sizes: '512x512', type: 'image/jpeg' }],
+      });
+      navigator.mediaSession.setActionHandler('play', () => usePlayerStore.getState().setPlaying(true));
+      navigator.mediaSession.setActionHandler('pause', () => usePlayerStore.getState().setPlaying(false));
+      navigator.mediaSession.setActionHandler('previoustrack', () => usePlayerStore.getState().skipTime(-15));
+      navigator.mediaSession.setActionHandler('nexttrack', () => usePlayerStore.getState().skipTime(15));
+    }
+  }, [currentTrack]);
+
+  // --- Scroll listener for MiniPlayer ---
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 200);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <div className="app" data-theme={theme}>
+      {/* Screen reader announcement for track changes */}
+      <div aria-live="polite" className="sr-only">
+        {currentTrack ? `Now playing: ${currentTrack.title} by ${currentTrack.artist || currentTrack.podcastName}` : ''}
+      </div>
       <div className={`app__main ${showFullPlayer ? 'app__main--blurred' : ''}`}>
         <div className="app__content">
-          <Header
-            searchQuery={searchQuery}
-            setSearchQuery={handleSearch}
-            activeView={activeView}
-            onBack={() => { setActiveView('home'); setSelectedArtist(null); setSelectedAlbum(null); }}
-            onOpenProfile={handleOpenProfile}
-            onOpenPremium={handleOpenPremium}
-            theme={theme}
-            onToggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
-          />
-          <MainContent
-            activeView={activeView}
-            searchQuery={searchQuery}
-            onPlay={handlePlay}
-            currentTrack={currentTrack}
-            isPlaying={isPlaying}
-            setActiveView={setActiveView}
-            likedTracks={likedTracks}
-            onToggleLike={handleToggleLike}
-            queue={queue}
-            onAddToQueue={handleAddToQueue}
-            onOpenArtist={handleOpenArtist}
-            onOpenAlbum={handleOpenAlbum}
-            onOpenAudiobook={handleOpenAudiobook}
-            onOpenPodcast={() => {}}
-            selectedArtist={selectedArtist}
-            selectedAlbum={selectedAlbum}
-            selectedPodcast={null}
-            onToast={handleToast}
-          />
+          <Header />
+          <MainContent />
         </div>
-        <Sidebar activeView={activeView} setActiveView={setActiveView} onOpenArtist={handleOpenArtist} />
+        <Sidebar />
       </div>
 
-      {showFullPlayer && (
-        <FullPlayer
-          currentTrack={currentTrack}
-          isPlaying={isPlaying}
-          onTogglePlay={() => currentTrack && setIsPlaying(p => !p)}
-          onSkipBack={() => handleSkip(-15)}
-          onSkipForward={() => handleSkip(30)}
-          progress={progressPct}
-          onSeek={handleSeek}
-          currentTime={displayTime}
-          duration={duration}
-          isRadio={isRadio}
-          playbackSpeed={playbackSpeed}
-          onChangeSpeed={setPlaybackSpeed}
-          isLiked={currentTrack ? likedTracks.includes(currentTrack.id) : false}
-          onToggleLike={() => currentTrack && handleToggleLike(currentTrack.id)}
-          volume={volume}
-          onSetVolume={setVolume}
-          isMuted={isMuted}
-          onToggleMute={() => setIsMuted(p => !p)}
-          onClose={() => setShowFullPlayer(false)}
-          queue={queue}
-          onRemoveFromQueue={(i) => setQueue(prev => prev.filter((_, idx) => idx !== i))}
-          onPlayItem={handlePlay}
-          sleepTimer={sleepTimer}
-          sleepOptions={sleepOptions}
-          onSleepStart={handleSleepStart}
-          onSleepCancel={handleSleepCancel}
-          onToggleSleepOptions={() => setSleepOptions(p => !p)}
-        />
-      )}
+      {showFullPlayer && <FullPlayer />}
 
       {showPremium && (
         <PremiumView onClose={() => setShowPremium(false)} />
       )}
 
-      <Toast toasts={toasts} onRemove={removeToast} />
+      <Toast />
 
-      <PlayerBar
-        currentTrack={currentTrack}
-        isPlaying={isPlaying}
-        onTogglePlay={() => currentTrack && setIsPlaying(p => !p)}
-        onSkipBack={() => handleSkip(-15)}
-        onSkipForward={() => handleSkip(30)}
-        progress={progressPct}
-        onSeek={handleSeek}
-        currentTime={displayTime}
-        duration={duration}
-        isRadio={isRadio}
-        playbackSpeed={playbackSpeed}
-        onChangeSpeed={setPlaybackSpeed}
-        isLiked={currentTrack ? likedTracks.includes(currentTrack.id) : false}
-        onToggleLike={() => currentTrack && handleToggleLike(currentTrack.id)}
-        volume={volume}
-        onSetVolume={setVolume}
-        isMuted={isMuted}
-        onToggleMute={() => setIsMuted(p => !p)}
-        onExpand={() => setShowFullPlayer(true)}
-        sleepTimer={sleepTimer}
-      />
+      <MiniPlayer visible={!!currentTrack && scrolled} />
+
+      <PlayerBar />
     </div>
   );
 };

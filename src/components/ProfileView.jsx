@@ -1,5 +1,14 @@
-import React from 'react';
-import { ARTISTS, TRACKS, AUDIOBOOKS, PODCASTS } from '../data/athir-data';
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ARTISTS } from '../data/artists';
+import { TRACKS } from '../data/tracks';
+import { AUDIOBOOKS } from '../data/audiobooks';
+import { PODCASTS } from '../data/podcasts';
+import { getStats } from '../data/gamification-store';
+import BadgesView from './BadgesView';
+import LangSwitcher from './LangSwitcher';
+import usePlayerStore from '../stores/playerStore';
+import useLibraryStore from '../stores/libraryStore';
 import './ProfileView.css';
 
 const PROFILE = {
@@ -12,8 +21,29 @@ const PROFILE = {
   stats: { followers: 142, following: 89 },
 };
 
-const ProfileView = ({ likedTracks, onPlay, currentTrack, isPlaying, recentTracks }) => {
-  const recent = recentTracks || TRACKS.slice(0, 8);
+const formatMinutes = (mins) => {
+  if (mins >= 60) {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${h}h ${m}m`;
+  }
+  return `${mins}m`;
+};
+
+const ProfileView = () => {
+  const { t } = useTranslation();
+  const currentTrack = usePlayerStore(s => s.currentTrack);
+  const isPlaying = usePlayerStore(s => s.isPlaying);
+  const playOrToggle = usePlayerStore(s => s.playOrToggle);
+  const likedTracks = useLibraryStore(s => s.likedTracks);
+  const [gamification, setGamification] = useState(getStats());
+
+  useEffect(() => {
+    const interval = setInterval(() => setGamification(getStats()), 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const recent = TRACKS.slice(0, 8);
   const liked = TRACKS.filter(t => likedTracks?.includes(t.id));
 
   return (
@@ -31,34 +61,81 @@ const ProfileView = ({ likedTracks, onPlay, currentTrack, isPlaying, recentTrack
           <div className="profile__stats">
             <div className="profile__stat">
               <span className="profile__stat-num">{PROFILE.stats.followers}</span>
-              <span className="profile__stat-label">Followers</span>
+              <span className="profile__stat-label">{t('profile.followers')}</span>
             </div>
             <div className="profile__stat">
               <span className="profile__stat-num">{PROFILE.stats.following}</span>
-              <span className="profile__stat-label">Following</span>
+              <span className="profile__stat-label">{t('profile.following')}</span>
             </div>
             <div className="profile__stat">
               <span className="profile__stat-num">{liked.length}</span>
-              <span className="profile__stat-label">Liked</span>
+              <span className="profile__stat-label">{t('profile.likedCount')}</span>
             </div>
             <div className="profile__stat">
               <span className="profile__stat-num">{PROFILE.joinDate}</span>
-              <span className="profile__stat-label">Joined</span>
+              <span className="profile__stat-label">{t('profile.joined')}</span>
             </div>
+          </div>
+          <div className="profile__settings" style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-subdued)', fontWeight: 500 }}>{t('profile.language')}:</span>
+            <LangSwitcher />
           </div>
         </div>
       </div>
 
-      {/* Liked Tracks */}
-      <section className="section">
+      {/* Gamification Stats */}
+      <section className="section" style={{ marginTop: 24 }}>
         <div className="section__head">
-          <span className="section__title">Liked Tracks</span>
+          <span className="section__title">{t('profile.listeningStats') || 'Listening Stats'}</span>
+          <span className="section__count">🎮</span>
+        </div>
+        <div className="profile__gamification">
+          <div className="profile__gamification-card">
+            <span className="profile__gamification-icon">🎵</span>
+            <span className="profile__gamification-value">{gamification.totalTracksPlayed}</span>
+            <span className="profile__gamification-label">{t('profile.tracksPlayed') || 'Tracks Played'}</span>
+          </div>
+          <div className="profile__gamification-card">
+            <span className="profile__gamification-icon">⏱️</span>
+            <span className="profile__gamification-value">{formatMinutes(gamification.totalListeningMinutes)}</span>
+            <span className="profile__gamification-label">{t('profile.listeningTime') || 'Listening Time'}</span>
+          </div>
+          <div className="profile__gamification-card">
+            <span className="profile__gamification-icon">🔥</span>
+            <span className="profile__gamification-value">{gamification.currentStreak}</span>
+            <span className="profile__gamification-label">{t('profile.dayStreak') || 'Day Streak'}</span>
+          </div>
+          <div className="profile__gamification-card">
+            <span className="profile__gamification-icon">🏆</span>
+            <span className="profile__gamification-value">{gamification.longestStreak}</span>
+            <span className="profile__gamification-label">{t('profile.bestStreak') || 'Best Streak'}</span>
+          </div>
+          <div className="profile__gamification-card">
+            <span className="profile__gamification-icon">❤️</span>
+            <span className="profile__gamification-value">{gamification.totalLikes}</span>
+            <span className="profile__gamification-label">{t('profile.likesGiven') || 'Likes Given'}</span>
+          </div>
+          <div className="profile__gamification-card">
+            <span className="profile__gamification-icon">📋</span>
+            <span className="profile__gamification-value">{gamification.totalPlaylists}</span>
+            <span className="profile__gamification-label">{t('profile.playlists') || 'Playlists'}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Badges */}
+      <BadgesView />
+
+      {/* Liked Tracks */}
+      <section className="section" style={{ marginTop: 24 }}>
+        <div className="section__head">
+          <span className="section__title">{t('library.likedTracks')}</span>
           <span className="section__count">{liked.length}</span>
         </div>
         {liked.length === 0 ? (
           <div className="empty-state" style={{ padding: '40px 20px' }}>
             <div className="empty-state__icon">♡</div>
-            <div className="empty-state__text">No liked tracks yet</div>
+            <div className="empty-state__text">{t('library.empty')}</div>
           </div>
         ) : (
           <div className="track-list">
@@ -66,7 +143,7 @@ const ProfileView = ({ likedTracks, onPlay, currentTrack, isPlaying, recentTrack
               <div
                 key={track.id}
                 className={`track-row ${currentTrack?.id === track.id && isPlaying ? 'track-row--active' : ''}`}
-                onClick={() => onPlay({ ...track, podcastName: track.artist, podcastId: track.artistId })}
+                onClick={() => playOrToggle({ ...track, podcastName: track.artist, podcastId: track.artistId })}
               >
                 <span className="track-row__num">{i + 1}</span>
                 <div className="track-row__info">
@@ -83,14 +160,14 @@ const ProfileView = ({ likedTracks, onPlay, currentTrack, isPlaying, recentTrack
       {/* Recent Plays */}
       <section className="section" style={{ marginTop: 24 }}>
         <div className="section__head">
-          <span className="section__title">Recently Played</span>
+          <span className="section__title">{t('profile.recentlyPlayed')}</span>
         </div>
         <div className="scroll">
           {recent.slice(0, 8).map((track, i) => (
             <div
               key={`recent-${i}`}
               className="card"
-              onClick={() => onPlay({ ...track, podcastName: track.artist, podcastId: track.artistId })}
+              onClick={() => playOrToggle({ ...track, podcastName: track.artist, podcastId: track.artistId })}
               style={{ minWidth: 130, maxWidth: 130 }}
             >
               <div className="card__img-wrap" style={{ borderRadius: '50%', padding: 4, background: 'transparent' }}>

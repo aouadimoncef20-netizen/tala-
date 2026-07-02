@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { getPlaylists, createPlaylist, deletePlaylist, removeTrackFromPlaylist } from '../data/playlist-store';
+import AIPlaylistGenerator from './AIPlaylistGenerator';
+import usePlayerStore from '../stores/playerStore';
+import useUIStore from '../stores/uiStore';
+import { createToast } from './Toast';
 import './PlaylistView.css';
 
-const PlaylistView = ({ onPlay, currentTrack, isPlaying }) => {
+const PlaylistView = () => {
+  const currentTrack = usePlayerStore(s => s.currentTrack);
+  const isPlaying = usePlayerStore(s => s.isPlaying);
+  const playOrToggle = usePlayerStore(s => s.playOrToggle);
+  const addToast = useUIStore(s => s.addToast);
   const [playlists, setPlaylists] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
+  const [showAI, setShowAI] = useState(false);
   const [newName, setNewName] = useState('');
   const [selectedId, setSelectedId] = useState(null);
 
@@ -31,8 +40,18 @@ const PlaylistView = ({ onPlay, currentTrack, isPlaying }) => {
     <div className="pl-view">
       <div className="section__head" style={{ marginTop: 16 }}>
         <span className="section__title">Playlists</span>
-        <button className="section__more" onClick={() => setShowCreate(true)}>+ New</button>
+        <div className="section__head-actions">
+          <button className="section__more section__more--ai" onClick={() => setShowAI(!showAI)}>
+            {showAI ? '✕ Close' : 'Generate with AI ✨'}
+          </button>
+          <button className="section__more" onClick={() => setShowCreate(true)}>+ New</button>
+        </div>
       </div>
+
+      {/* AI Playlist Generator */}
+      {showAI && (
+        <AIPlaylistGenerator onPlay={playOrToggle} onToast={(type, title, msg) => addToast(createToast(type, title, msg))} />
+      )}
 
       {/* Create modal */}
       {showCreate && (
@@ -76,7 +95,7 @@ const PlaylistView = ({ onPlay, currentTrack, isPlaying }) => {
           ) : (
             <div className="track-list">
               {selected.tracks.map((track, i) => (
-                <div key={track.id} className={`track-row ${currentTrack?.id === track.id && isPlaying ? 'track-row--active' : ''}`} onClick={() => onPlay({ ...track, podcastName: track.artist, podcastId: track.artistId })}>
+                <div key={track.id} className={`track-row ${currentTrack?.id === track.id && isPlaying ? 'track-row--active' : ''}`} onClick={() => playOrToggle({ ...track, podcastName: track.artist, podcastId: track.artistId })}>
                   <span className="track-row__num">{i + 1}</span>
                   <div className="track-row__info">
                     <div className="track-row__title">{track.title}</div>

@@ -5,8 +5,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  background: rgba(12, 15, 20, 0.92);
-  backdrop-filter: blur(10px);
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   gap: 16px;

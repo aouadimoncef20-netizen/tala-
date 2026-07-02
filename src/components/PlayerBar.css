@@ -6,11 +6,19 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--bg-secondary);
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
   z-index: 200;
-  user-select: none;
+  /* user-select: none; */
   animation: slideUp 0.3s ease;
+}
+
+/* Add a subtle top border glow when a track is playing */
+.player--active {
+  border-top: 1px solid var(--accent);
+  box-shadow: 0 -4px 24px var(--accent-glow);
 }
 
 .player__idle {
@@ -30,7 +38,7 @@
 
 /* Top progress edge */
 .player__progress-edge {
-  height: 2px;
+  height: 4px;
   background: var(--border);
   cursor: pointer;
   position: relative;
@@ -75,6 +83,15 @@
   flex-shrink: 0;
 }
 
+.player__img--spin {
+  animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .player__info {
   flex: 1;
   min-width: 0;
@@ -111,6 +128,18 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   flex-shrink: 0;
+}
+
+.player__radio-badge {
+  font-size: 7px;
+  font-weight: 700;
+  color: var(--accent-amber, #F5A623);
+  background: rgba(245, 166, 35, 0.15);
+  padding: 1px 4px;
+  border-radius: 2px;
+  animation: pulse 1.5s infinite;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .player__btn {
@@ -167,6 +196,11 @@
   justify-content: center;
   transition: var(--transition);
   border-radius: 4px;
+}
+
+.player__ctrl:active {
+  transform: scale(0.96);
+  transition: transform 0.1s ease;
 }
 
 .player__ctrl:hover {

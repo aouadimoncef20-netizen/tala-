@@ -1,5 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { ARTISTS, TRACKS, RADIO_STATIONS, PODCASTS, GENRES, ALBUMS, AUDIOBOOKS } from '../data/athir-data';
+﻿import React, { useState, useEffect } from 'react';
+import { ARTISTS } from '../data/artists';
+import { TRACKS } from '../data/tracks';
+import { RADIO_STATIONS } from '../data/radio';
+import { PODCASTS } from '../data/podcasts';
+import { GENRES } from '../data/genres';
+import { ALBUMS } from '../data/albums';
+import { AUDIOBOOKS } from '../data/audiobooks';
+import MoodPlaylists from './MoodPlaylists';
+import ForYouSection from './ForYouSection';
+import ShareMenu from './ShareMenu';
+import ContextMenu from './ContextMenu';
+import TrackRow from './TrackRow';
+import { SkeletonHero, SkeletonRow, SkeletonGrid } from './Skeleton';
+import usePlayerStore from '../stores/playerStore';
+import useUIStore from '../stores/uiStore';
+import useLibraryStore from '../stores/libraryStore';
+import { createToast } from './Toast';
 import './MainContent.css';
 
 const HERO_SLIDES = [
@@ -7,7 +23,7 @@ const HERO_SLIDES = [
     id: 'music',
     label: 'Trending Tracks',
     title: 'Discover Algerian Music',
-    desc: 'From Rai to Chaabi, Kabyle to Rap Dz — the sounds of Algeria in one place.',
+    desc: 'From Rai to Chaabi, Kabyle to Rap Dz â€” the sounds of Algeria in one place.',
     action: 'explore',
     items: TRACKS.slice(0, 5),
     bg: 'https://picsum.photos/seed/talamusic/1200/500',
@@ -27,7 +43,7 @@ const HERO_SLIDES = [
     id: 'radio',
     label: 'Live Radio',
     title: 'Listen Live',
-    desc: '20 Algerian radio stations — news, music, culture. Streaming now.',
+    desc: '20 Algerian radio stations â€” news, music, culture. Streaming now.',
     action: 'radio',
     items: RADIO_STATIONS.slice(0, 5),
     bg: 'https://picsum.photos/seed/talaradio/1200/500',
@@ -37,7 +53,7 @@ const HERO_SLIDES = [
     id: 'podcasts',
     label: 'Podcasts',
     title: 'Algerian Stories',
-    desc: 'Culture, history, tech, comedy — podcasts that speak to you.',
+    desc: 'Culture, history, tech, comedy â€” podcasts that speak to you.',
     action: 'podcasts',
     items: PODCASTS.slice(0, 5),
     bg: 'https://picsum.photos/seed/talapod/1200/500',
@@ -47,7 +63,7 @@ const HERO_SLIDES = [
     id: 'audiobooks',
     label: 'Audiobooks',
     title: 'Listen & Learn',
-    desc: 'Algerian literature, history, poetry, and philosophy — narrated.',
+    desc: 'Algerian literature, history, poetry, and philosophy â€” narrated.',
     action: 'audiobooks',
     items: AUDIOBOOKS.slice(0, 5),
     bg: 'https://picsum.photos/seed/talaaudio/1200/500',
@@ -65,14 +81,26 @@ const HERO_SLIDES = [
   },
 ];
 
-const HomeView = ({ onPlay, currentTrack, isPlaying, setActiveView, onOpenArtist, onOpenAlbum, onOpenAudiobook }) => {
+const HomeView = () => {
+  const { currentTrack, isPlaying, playOrToggle, addToQueue } = usePlayerStore();
+  const { setActiveView, setSelectedArtist, setSelectedAlbum, addToast } = useUIStore();
+  const { likedTracks } = useLibraryStore();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [fade, setFade] = useState(true);
+  const [shareTrack, setShareTrack] = useState(null);
+  const [contextMenu, setContextMenu] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate initial load with skeleton
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const slide = HERO_SLIDES[currentSlide];
   const isActive = (id) => currentTrack?.id === id && isPlaying;
 
-  const playTrack = (track) => onPlay({ ...track, podcastName: track.artist, podcastId: track.artistId });
+  const playTrack = (track) => playOrToggle({ ...track, podcastName: track.artist, podcastId: track.artistId });
 
   // Auto-cycle every 6 seconds
   useEffect(() => {
@@ -100,8 +128,28 @@ const HomeView = ({ onPlay, currentTrack, isPlaying, setActiveView, onOpenArtist
 
   const getItemImage = (item) => item.image || item.bg || '';
 
+  if (isLoading) {
+    return (
+      <div>
+        <SkeletonHero />
+        <div style={{ padding: '0 4px', marginTop: 20 }}>
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)}
+        </div>
+        <div style={{ marginTop: 32 }}>
+          <SkeletonGrid count={8} />
+        </div>
+        <div style={{ marginTop: 32 }}>
+          <SkeletonGrid count={6} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
+      {/* For You Recommendations */}
+      <ForYouSection />
+
       {/* Dynamic Hero Banner */}
       <div className="hero hero--dynamic" onClick={handleSlideClick} style={{ cursor: 'pointer' }}>
         {/* Background image */}
@@ -126,7 +174,7 @@ const HomeView = ({ onPlay, currentTrack, isPlaying, setActiveView, onOpenArtist
           </div>
 
           <button className="hero__btn" onClick={(e) => { e.stopPropagation(); setActiveView(slide.action); }}>
-            ▶ Explore {slide.label}
+            â–¶ Explore {slide.label}
           </button>
         </div>
 
@@ -156,28 +204,22 @@ const HomeView = ({ onPlay, currentTrack, isPlaying, setActiveView, onOpenArtist
           {TRACKS.slice(0, 6).map((track, i) => (
             <div
               key={track.id}
-              className={`track-row ${isActive(track.id) ? 'track-row--active' : ''}`}
-              onClick={() => playTrack(track)}
+              onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, track }); }}
             >
-              <span className="track-row__num">{i + 1}</span>
-              <img className="track-row__img" src={track.image} alt={track.title} loading="lazy" />
-              <div className="track-row__info">
-                <div className="track-row__title">
-                  {isActive(track.id) && <span className="track-row__indicator" />}
-                  {track.title}
-                </div>
-                <div className="track-row__artist">{track.artist}</div>
-              </div>
-              <span className="track-row__duration">{track.duration}</span>
-              <div className="track-row__actions">
-                <button className="track-row__action" onClick={(e) => { e.stopPropagation(); playTrack(track); }}>
-                  {isActive(track.id) ? '⏸' : '▶'}
-                </button>
-              </div>
+              <TrackRow
+                track={track}
+                index={i}
+                isActive={isActive(track.id)}
+                onPlay={playTrack}
+                onShare={setShareTrack}
+              />
             </div>
           ))}
         </div>
       </section>
+
+      {/* Mood Playlists */}
+      <MoodPlaylists />
 
       {/* Artists */}
       <section className="section">
@@ -187,7 +229,7 @@ const HomeView = ({ onPlay, currentTrack, isPlaying, setActiveView, onOpenArtist
         </div>
         <div className="scroll">
           {ARTISTS.slice(0, 8).map(artist => (
-            <div key={artist.id} className="card" style={{ minWidth: 130, maxWidth: 130, cursor: 'pointer' }} onClick={() => onOpenArtist?.(artist.id)}>
+            <div key={artist.id} className="card" style={{ minWidth: 130, maxWidth: 130, cursor: 'pointer' }} onClick={() => setSelectedArtist(artist.id)} tabIndex={0} role="button" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedArtist(artist.id); } }}>
               <div className="card__img-wrap" style={{ borderRadius: '50%', padding: 6, background: 'transparent' }}>
                 <img className="card__img" src={artist.image} alt={artist.name} loading="lazy" style={{ borderRadius: '50%' }} />
               </div>
@@ -211,10 +253,10 @@ const HomeView = ({ onPlay, currentTrack, isPlaying, setActiveView, onOpenArtist
         </div>
         <div className="scroll">
           {RADIO_STATIONS.slice(0, 6).map(radio => (
-            <div key={radio.id} className="card" onClick={() => onPlay({
+            <div key={radio.id} className="card" onClick={() => playOrToggle({
               id: radio.id, title: radio.name, artist: radio.freq, type: 'radio',
               image: radio.image, duration: 'Live', podcastName: radio.name,
-            })}>
+            })} tabIndex={0} role="button" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playOrToggle({ id: radio.id, title: radio.name, artist: radio.freq, type: 'radio', image: radio.image, duration: 'Live', podcastName: radio.name }); } }}>
               <div className="card__img-wrap">
                 <img className="card__img" src={radio.image} alt={radio.name} loading="lazy" />
                 <div className="card__play card__play--visible" style={{ background: '#4A9BAA' }}>
@@ -241,7 +283,7 @@ const HomeView = ({ onPlay, currentTrack, isPlaying, setActiveView, onOpenArtist
         </div>
         <div className="scroll">
           {ALBUMS.slice(0, 10).map(album => (
-            <div key={album.id} className="card" onClick={() => onOpenAlbum?.(album.id)}>
+            <div key={album.id} className="card" onClick={() => setSelectedAlbum(album.id)} tabIndex={0} role="button" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedAlbum(album.id); } }}>
               <div className="card__img-wrap">
                 <img className="card__img" src={album.image} alt={album.title} loading="lazy" />
                 <div className="card__play card__play--visible">
@@ -250,7 +292,7 @@ const HomeView = ({ onPlay, currentTrack, isPlaying, setActiveView, onOpenArtist
               </div>
               <div className="card__body">
                 <div className="card__title">{album.title}</div>
-                <div className="card__sub">{album.artist} · {album.year}</div>
+                <div className="card__sub">{album.artist} Â· {album.year}</div>
               </div>
             </div>
           ))}
@@ -268,7 +310,7 @@ const HomeView = ({ onPlay, currentTrack, isPlaying, setActiveView, onOpenArtist
         </div>
         <div className="scroll">
           {PODCASTS.slice(0, 6).map(pod => (
-            <div key={pod.id} className="card" onClick={() => setActiveView('podcasts')}>
+            <div key={pod.id} className="card" onClick={() => setActiveView('podcasts')} tabIndex={0} role="button" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveView('podcasts'); } }}>
               <div className="card__img-wrap">
                 <img className="card__img" src={pod.image} alt={pod.title} loading="lazy" />
                 <div className="card__play card__play--visible">
@@ -295,7 +337,7 @@ const HomeView = ({ onPlay, currentTrack, isPlaying, setActiveView, onOpenArtist
         </div>
         <div className="scroll">
           {AUDIOBOOKS.slice(0, 8).map(book => (
-            <div key={book.id} className="card" onClick={() => onOpenAudiobook?.(book)}>
+            <div key={book.id} className="card" onClick={() => setActiveView('audiobooks')} tabIndex={0} role="button" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveView('audiobooks'); } }}>
               <div className="card__img-wrap">
                 <div className="card__img" style={{ background: `linear-gradient(135deg, ${book.color}, ${book.color}66)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 700, color: '#fff' }}>
                   {book.title.split(' ').map(w => w[0]).join('').slice(0, 2)}
@@ -306,7 +348,7 @@ const HomeView = ({ onPlay, currentTrack, isPlaying, setActiveView, onOpenArtist
               </div>
               <div className="card__body">
                 <div className="card__title">{book.title}</div>
-                <div className="card__sub">{book.author} · {book.duration}</div>
+                <div className="card__sub">{book.author} Â· {book.duration}</div>
               </div>
             </div>
           ))}
@@ -320,15 +362,31 @@ const HomeView = ({ onPlay, currentTrack, isPlaying, setActiveView, onOpenArtist
         </div>
         <div className="genre-grid">
           {GENRES.map((g, i) => (
-            <div key={g.name} className="genre-card" style={{ background: `linear-gradient(135deg, ${g.color}, ${g.color}77)`, animationDelay: `${i * 0.03}s` }} onClick={() => setActiveView('explore')}>
+            <div key={g.name} className="genre-card" style={{ background: `linear-gradient(135deg, ${g.color}, ${g.color}77)`, animationDelay: `${i * 0.03}s` }} onClick={() => setActiveView('explore')} tabIndex={0} role="button" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveView('explore'); } }}>
               <div className="genre-card__name">{g.name}</div>
               <div className="genre-card__desc">{g.desc}</div>
             </div>
           ))}
         </div>
       </section>
+
+      {/* Share Menu */}
+      {shareTrack && (
+        <ShareMenu track={shareTrack} onClose={() => setShareTrack(null)} onToast={(type, title, msg) => addToast(createToast(type, title, msg))} />
+      )}
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          track={contextMenu.track}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 };
 
 export default HomeView;
+

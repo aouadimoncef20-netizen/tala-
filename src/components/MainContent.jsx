@@ -1,53 +1,92 @@
-import React from 'react';
-import HomeView from './HomeView';
-import ExploreView from './ExploreView';
-import RadioView from './RadioView';
-import PodcastView from './PodcastView';
-import LibraryView from './LibraryView';
-import ArtistDetail from './ArtistDetail';
-import AlbumDetail from './AlbumDetail';
-import SearchResults from './SearchResults';
-import PlaylistView from './PlaylistView';
-import AudiobookView from './AudiobookView';
-import ProfileView from './ProfileView';
+﻿import React, { Suspense } from 'react';
+import useUIStore from '../stores/uiStore';
 import './MainContent.css';
 
-const MainContent = ({
-  activeView, searchQuery, onPlay, currentTrack, isPlaying, setActiveView,
-  likedTracks, onToggleLike, onAddToQueue,
-  onOpenArtist, onOpenAlbum, onOpenAudiobook,
-  selectedArtist, selectedAlbum, onToast,
-}) => {
+// Lazy-load all view components
+const LazyHomeView = React.lazy(() => import('./HomeView'));
+const LazyExploreView = React.lazy(() => import('./ExploreView'));
+const LazyRadioView = React.lazy(() => import('./RadioView'));
+const LazyPodcastView = React.lazy(() => import('./PodcastView'));
+const LazyLibraryView = React.lazy(() => import('./LibraryView'));
+const LazyArtistDetail = React.lazy(() => import('./ArtistDetail'));
+const LazyAlbumDetail = React.lazy(() => import('./AlbumDetail'));
+const LazySearchResults = React.lazy(() => import('./SearchResults'));
+const LazyPlaylistView = React.lazy(() => import('./PlaylistView'));
+const LazyAudiobookView = React.lazy(() => import('./AudiobookView'));
+const LazyProfileView = React.lazy(() => import('./ProfileView'));
+const LazyStatsView = React.lazy(() => import('./StatsView'));
+const LazyUploadForm = React.lazy(() => import('./UploadForm'));
+
+const LoadingFallback = () => (
+  <div className="loading-state" style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-subdued)' }}>
+    <div style={{ fontSize: 24, marginBottom: 8 }}>â—Œ</div>
+    <div style={{ fontSize: 13 }}>Loading...</div>
+  </div>
+);
+
+const MainContent = () => {
+  const activeView = useUIStore(s => s.activeView);
+  const searchQuery = useUIStore(s => s.searchQuery);
+  const setActiveView = useUIStore(s => s.setActiveView);
+  const selectedArtist = useUIStore(s => s.selectedArtist);
+  const selectedAlbum = useUIStore(s => s.selectedAlbum);
+
   const renderView = () => {
     switch (activeView) {
       case 'home':
-        return <HomeView onPlay={onPlay} currentTrack={currentTrack} isPlaying={isPlaying} setActiveView={setActiveView} onOpenArtist={onOpenArtist} onOpenAlbum={onOpenAlbum} onOpenAudiobook={onOpenAudiobook} />;
+        return <LazyHomeView />;
       case 'explore':
-        return <ExploreView searchQuery={searchQuery} onPlay={onPlay} currentTrack={currentTrack} isPlaying={isPlaying} setActiveView={setActiveView} onToggleLike={onToggleLike} likedTracks={likedTracks} />;
+        return <LazyExploreView />;
       case 'search':
-        return <SearchResults query={searchQuery} onPlay={onPlay} currentTrack={currentTrack} isPlaying={isPlaying} onOpenArtist={onOpenArtist} onToggleLike={onToggleLike} likedTracks={likedTracks} />;
+        return <LazySearchResults query={searchQuery} />;
       case 'radio':
-        return <RadioView onPlay={onPlay} currentTrack={currentTrack} isPlaying={isPlaying} />;
+        return <LazyRadioView />;
       case 'podcasts':
-        return <PodcastView onPlay={onPlay} currentTrack={currentTrack} isPlaying={isPlaying} onToggleLike={onToggleLike} likedTracks={likedTracks} onToast={onToast} />;
+        return <LazyPodcastView />;
       case 'library':
-        return <LibraryView likedTracks={likedTracks} onPlay={onPlay} currentTrack={currentTrack} isPlaying={isPlaying} />;
+        return <LazyLibraryView />;
       case 'playlists':
-        return <PlaylistView onPlay={onPlay} currentTrack={currentTrack} isPlaying={isPlaying} />;
+        return <LazyPlaylistView />;
       case 'audiobooks':
-        return <AudiobookView onPlay={onPlay} currentTrack={currentTrack} isPlaying={isPlaying} />;
+        return <LazyAudiobookView />;
       case 'profile':
-        return <ProfileView likedTracks={likedTracks} onPlay={onPlay} currentTrack={currentTrack} isPlaying={isPlaying} />;
+        return <LazyProfileView />;
+      case 'stats':
+        return <LazyStatsView />;
+      case 'upload':
+        return <LazyUploadForm />;
       case 'artist':
-        return <ArtistDetail artistId={selectedArtist} onPlay={onPlay} currentTrack={currentTrack} isPlaying={isPlaying} onOpenAlbum={onOpenAlbum} />;
+        return <LazyArtistDetail artistId={selectedArtist} />;
       case 'album':
-        return <AlbumDetail albumId={selectedAlbum} onPlay={onPlay} currentTrack={currentTrack} isPlaying={isPlaying} onOpenArtist={onOpenArtist} />;
+        return <LazyAlbumDetail albumId={selectedAlbum} />;
       default:
-        return <HomeView onPlay={onPlay} currentTrack={currentTrack} isPlaying={isPlaying} setActiveView={setActiveView} onOpenArtist={onOpenArtist} onOpenAlbum={onOpenAlbum} onOpenAudiobook={onOpenAudiobook} />;
+        return (
+          <div className="empty-state" style={{ padding: '80px 20px', textAlign: 'center' }}>
+            <div className="empty-state__icon" style={{ fontSize: 48, marginBottom: 12 }}>ðŸ”</div>
+            <div className="empty-state__text" style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Page not found</div>
+            <div className="empty-state__sub" style={{ fontSize: 13, color: 'var(--text-subdued)', marginBottom: 20 }}>
+              The view "{activeView}" doesn't exist.
+            </div>
+            <button
+              className="hero__btn"
+              onClick={() => setActiveView('home')}
+              style={{ display: 'inline-flex' }}
+            >
+              â—‡ Go Home
+            </button>
+          </div>
+        );
     }
   };
 
-  return <main className="main-content">{renderView()}</main>;
+  return (
+    <main className="main-content">
+      <Suspense fallback={<LoadingFallback />}>
+        {renderView()}
+      </Suspense>
+    </main>
+  );
 };
 
 export default MainContent;
+

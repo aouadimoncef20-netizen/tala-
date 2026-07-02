@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Home",
+    "explore": "Explore",
+    "radio": "Radio",
+    "podcasts": "Podcasts",
+    "library": "Library",
+    "playlists": "Playlists",
+    "audiobooks": "Audiobooks"
+  },
+  "home": {
+    "trending": "Trending Now",
+    "artists": "Popular Artists",
+    "liveRadio": "Live Radio",
+    "albums": "New Albums",
+    "genres": "Browse Genres",
+    "viewAll": "View All"
+  },
+  "player": {
+    "selectTrack": "Select a track to start playing",
+    "nowPlaying": "Now Playing",
+    "live": "LIVE",
+    "upNext": "Up Next",
+    "addToQueue": "Add to Queue"
+  },
+  "search": {
+    "placeholder": "Search artists, tracks...",
+    "placeholderShort": "Search...",
+    "tracks": "Tracks",
+    "artists": "Artists",
+    "noResults": "No results found"
+  },
+  "library": {
+    "title": "Your Library",
+    "likedTracks": "Liked Tracks",
+    "empty": "No liked tracks yet",
+    "emptyHint": "Tap the ♥ on any track to save it here"
+  },
+  "playlist": {
+    "create": "Create Playlist",
+    "name": "Playlist name",
+    "createBtn": "Create",
+    "cancel": "Cancel",
+    "delete": "Delete Playlist"
+  },
+  "artist": {
+    "tracks": "Tracks",
+    "albums": "Albums",
+    "related": "Related Artists",
+    "playAlbum": "Play Album",
+    "followers": "Followers"
+  },
+  "fullplayer": {
+    "sleepTimer": "Sleep Timer",
+    "minutes": "min",
+    "cancel": "Cancel",
+    "close": "Close",
+    "speed": "Speed"
+  },
+  "premium": {
+    "title": "Tala Premium",
+    "free": "Free",
+    "premium": "Premium",
+    "family": "Family",
+    "perMonth": "/month",
+    "getStarted": "Get Started",
+    "features": "Features"
+  },
+  "common": {
+    "search": "Search",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "share": "Share",
+    "copy": "Copy",
+    "addToQueue": "Add to Queue",
+    "addToPlaylist": "Add to Playlist"
+  },
+  "toast": {
+    "liked": "Liked ♥",
+    "unliked": "Removed from likes",
+    "addedToQueue": "Added to queue",
+    "copied": "Copied to clipboard"
+  },
+  "profile": {
+    "title": "Profile",
+    "stats": "Stats",
+    "likedCount": "Liked",
+    "theme": "Theme",
+    "language": "Language",
+    "badges": "Badges",
+    "followers": "Followers",
+    "following": "Following",
+    "joined": "Joined",
+    "recentlyPlayed": "Recently Played",
+    "subtitle": "Your listening world"
+  }
+}

@@ -3,6 +3,25 @@
   padding-bottom: 24px;
 }
 
+.section__head-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.section__more--ai {
+  background: linear-gradient(135deg, var(--accent), var(--accent-amber));
+  color: #0C0F14 !important;
+  font-weight: 700 !important;
+  padding: 6px 14px !important;
+}
+
+.section__more--ai:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+
 /* Modal */
 .pl-modal-overlay {
   position: fixed;

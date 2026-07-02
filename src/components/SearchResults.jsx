@@ -1,10 +1,18 @@
 import React, { useState, useMemo } from 'react';
-import { ARTISTS, TRACKS, PODCASTS } from '../data/athir-data';
+import { ARTISTS } from '../data/artists';
+import { TRACKS } from '../data/tracks';
+import { PODCASTS } from '../data/podcasts';
+import usePlayerStore from '../stores/playerStore';
+import useUIStore from '../stores/uiStore';
+import useLibraryStore from '../stores/libraryStore';
 import './MainContent.css';
 
 const TABS = ['Tracks', 'Artists', 'Podcasts'];
 
-const SearchResults = ({ query, onPlay, currentTrack, isPlaying, onOpenArtist, onToggleLike, likedTracks }) => {
+const SearchResults = ({ query }) => {
+  const { currentTrack, isPlaying, playOrToggle } = usePlayerStore();
+  const { setSelectedArtist } = useUIStore();
+  const { likedTracks, toggleLike } = useLibraryStore();
   const [tab, setTab] = useState('Tracks');
 
   const results = useMemo(() => {
@@ -58,7 +66,7 @@ const SearchResults = ({ query, onPlay, currentTrack, isPlaying, onOpenArtist, o
       ) : tab === 'Tracks' ? (
         <div className="track-list">
           {activeList.slice(0, 50).map((track, i) => (
-            <div key={track.id} className={`track-row ${isActive(track.id) ? 'track-row--active' : ''}`} onClick={() => onPlay({ ...track, podcastName: track.artist, podcastId: track.artistId })}>
+            <div key={track.id} className={`track-row ${isActive(track.id) ? 'track-row--active' : ''}`} onClick={() => playOrToggle({ ...track, podcastName: track.artist, podcastId: track.artistId })}>
               <span className="track-row__num">{i + 1}</span>
               <div className="track-row__info">
                 <div className="track-row__title">
@@ -69,7 +77,7 @@ const SearchResults = ({ query, onPlay, currentTrack, isPlaying, onOpenArtist, o
               </div>
               <span className="track-row__duration">{track.duration}</span>
               <div className="track-row__actions">
-                <button className="track-row__action" onClick={(e) => { e.stopPropagation(); onToggleLike?.(track.id); }}>
+                <button className="track-row__action" onClick={(e) => { e.stopPropagation(); toggleLike(track.id); }}>
                   {likedTracks?.includes(track.id) ? '♥' : '♡'}
                 </button>
               </div>
@@ -79,7 +87,7 @@ const SearchResults = ({ query, onPlay, currentTrack, isPlaying, onOpenArtist, o
       ) : tab === 'Artists' ? (
         <div className="scroll">
           {activeList.map(artist => (
-            <div key={artist.id} className="card" style={{ minWidth: 140, maxWidth: 140, cursor: 'pointer' }} onClick={() => onOpenArtist?.(artist.id)}>
+            <div key={artist.id} className="card" style={{ minWidth: 140, maxWidth: 140, cursor: 'pointer' }} onClick={() => setSelectedArtist(artist.id)} tabIndex={0} role="button" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedArtist(artist.id); } }}>
               <div className="card__img-wrap" style={{ borderRadius: '50%', padding: 6, background: 'transparent' }}>
                 <div className="card__img" style={{ borderRadius: '50%', background: `linear-gradient(135deg, ${artist.color}, ${artist.color}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, width: '100%', height: '100%', aspectRatio: 1 }}>
                   {artist.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
@@ -95,7 +103,7 @@ const SearchResults = ({ query, onPlay, currentTrack, isPlaying, onOpenArtist, o
       ) : (
         <div className="scroll">
           {activeList.map(pod => (
-            <div key={pod.id} className="card" style={{ cursor: 'pointer' }}>
+            <div key={pod.id} className="card" style={{ cursor: 'pointer' }} tabIndex={0} role="button" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedArtist(pod.id); } }}>
               <div className="card__img-wrap">
                 <div className="card__img" style={{ background: `linear-gradient(135deg, ${pod.color}, ${pod.color}66)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 18 }}>
                   {pod.title.split(' ').map(w => w[0]).join('').slice(0, 2)}

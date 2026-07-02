@@ -1,9 +1,26 @@
 import React, { useState } from 'react';
-import { ARTISTS, TRACKS, GENRES } from '../data/athir-data';
+import { ARTISTS } from '../data/artists';
+import { TRACKS } from '../data/tracks';
+import { GENRES } from '../data/genres';
+import ShareMenu from './ShareMenu';
+import ContextMenu from './ContextMenu';
+import TrackRow from './TrackRow';
+import usePlayerStore from '../stores/playerStore';
+import useUIStore from '../stores/uiStore';
+import useLibraryStore from '../stores/libraryStore';
+import { createToast } from './Toast';
 import './MainContent.css';
 
-const ExploreView = ({ searchQuery, onPlay, currentTrack, isPlaying, onToggleLike, likedTracks }) => {
+const TRACKS_PER_PAGE = 50;
+
+const ExploreView = () => {
+  const { currentTrack, isPlaying, playOrToggle, addToQueue } = usePlayerStore();
+  const { searchQuery, addToast } = useUIStore();
+  const { likedTracks, toggleLike } = useLibraryStore();
   const [activeGenre, setActiveGenre] = useState(null);
+  const [shareTrack, setShareTrack] = useState(null);
+  const [contextMenu, setContextMenu] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(TRACKS_PER_PAGE);
 
   const filteredTracks = searchQuery
     ? TRACKS.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.artist.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -16,6 +33,18 @@ const ExploreView = ({ searchQuery, onPlay, currentTrack, isPlaying, onToggleLik
     : activeGenre
     ? ARTISTS.filter(a => a.genre === activeGenre)
     : ARTISTS;
+
+  const visibleTracks = filteredTracks.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredTracks.length;
+
+  // Reset pagination when filters change
+  React.useEffect(() => {
+    setVisibleCount(TRACKS_PER_PAGE);
+  }, [searchQuery, activeGenre]);
+
+  const handleLoadMore = () => {
+    setVisibleCount(prev => Math.min(prev + TRACKS_PER_PAGE, filteredTracks.length));
+  };
 
   return (
     <div>
@@ -74,30 +103,54 @@ const ExploreView = ({ searchQuery, onPlay, currentTrack, isPlaying, onToggleLik
           </div>
         ) : (
           <div className="track-list">
-            {filteredTracks.map((track, i) => (
+            {visibleTracks.map((track, i) => (
               <div
                 key={track.id}
-                className={`track-row ${currentTrack?.id === track.id && isPlaying ? 'track-row--active' : ''}`}
-                onClick={() => onPlay({ ...track, podcastName: track.artist, podcastId: track.artistId })}
+                onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, track: { ...track, podcastName: track.artist, podcastId: track.artistId } }); }}
               >
-                <span className="track-row__num">{i + 1}</span>
-                <img className="track-row__img" src={track.image} alt={track.title} loading="lazy" />
-                <div className="track-row__info">
-                  <div className="track-row__title">
-                    {currentTrack?.id === track.id && isPlaying && <span className="track-row__indicator" />}
-                    {track.title}
-                  </div>
-                  <div className="track-row__artist">{track.artist}</div>
-                </div>
-                <span className="track-row__duration">{track.duration}</span>
-                <div className="track-row__actions">
-                  <button className="track-row__action" onClick={(e) => { e.stopPropagation(); onToggleLike(track.id); }}>
-                    {likedTracks?.includes(track.id) ? '♥' : '♡'}
-                  </button>
-                </div>
+                <TrackRow
+                  track={track}
+                  index={i}
+                  isActive={currentTrack?.id === track.id && isPlaying}
+                  onPlay={(t) => playOrToggle({ ...t, podcastName: t.artist, podcastId: t.artistId })}
+                  onToggleLike={(id) => {
+                    const wasLiked = toggleLike(id);
+                    addToast(createToast(wasLiked ? 'removed' : 'liked', wasLiked ? 'Removed from likes' : 'Added to likes', ''));
+                  }}
+                  isLiked={likedTracks?.includes(track.id)}
+                  onShare={setShareTrack}
+                />
               </div>
             ))}
           </div>
+        )}
+
+        {/* Load More button */}
+        {hasMore && (
+          <div style={{ textAlign: 'center', marginTop: 16 }}>
+            <button
+              className="section__more"
+              onClick={handleLoadMore}
+              style={{ padding: '8px 24px', fontSize: 12 }}
+            >
+              Load More ({filteredTracks.length - visibleCount} remaining)
+            </button>
+          </div>
+        )}
+
+        {/* Share Menu */}
+        {shareTrack && (
+          <ShareMenu track={shareTrack} onClose={() => setShareTrack(null)} onToast={(type, title, msg) => addToast(createToast(type, title, msg))} />
+        )}
+
+        {/* Context Menu */}
+        {contextMenu && (
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            track={contextMenu.track}
+            onClose={() => setContextMenu(null)}
+          />
         )}
       </section>
     </div>

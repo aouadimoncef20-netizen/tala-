@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { AUDIOBOOKS } from '../data/athir-data';
+import { AUDIOBOOKS } from '../data/audiobooks';
 import CommentSection from './CommentSection';
+import usePlayerStore from '../stores/playerStore';
 import './MainContent.css';
 
-const AudiobookView = ({ onPlay, currentTrack, isPlaying }) => {
+const AudiobookView = () => {
+  const currentTrack = usePlayerStore(s => s.currentTrack);
+  const isPlaying = usePlayerStore(s => s.isPlaying);
+  const playOrToggle = usePlayerStore(s => s.playOrToggle);
   const [selected, setSelected] = useState(null);
   const [filter, setFilter] = useState('All');
 
@@ -32,7 +36,7 @@ const AudiobookView = ({ onPlay, currentTrack, isPlaying }) => {
             <button
               className="hero__btn"
               style={{ marginTop: 12 }}
-              onClick={() => onPlay({
+              onClick={() => playOrToggle({
                 id: book.id,
                 title: book.title,
                 artist: book.author,

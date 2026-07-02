@@ -2,13 +2,15 @@
 .sidebar {
   width: var(--sidebar-width);
   min-width: var(--sidebar-width);
-  background: var(--bg-secondary);
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border-left: 1px solid var(--border);
   padding: 0;
-  user-select: none;
+  /* user-select: none; */
 }
 
 /* Logo Area */
@@ -42,7 +44,10 @@
 .sidebar__brand-name {
   font-size: 17px;
   font-weight: 700;
-  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--accent), var(--accent-amber));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   line-height: 1.2;
 }
 
@@ -102,7 +107,7 @@
 }
 
 .sidebar__item--active {
-  background: var(--bg-card);
+  background: linear-gradient(90deg, var(--accent-glow), transparent);
   color: var(--accent);
   font-weight: 600;
   border-right: 3px solid var(--accent);

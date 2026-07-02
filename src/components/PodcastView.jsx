@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
-import { PODCASTS, getEpisodesForPodcast } from '../data/athir-data';
+import { PODCASTS, getEpisodesForPodcast } from '../data/podcasts';
 import ShareButton from './ShareButton';
 import CommentSection from './CommentSection';
+import usePlayerStore from '../stores/playerStore';
+import useLibraryStore from '../stores/libraryStore';
+import useUIStore from '../stores/uiStore';
+import { createToast } from './Toast';
 import './MainContent.css';
 
-const PodcastView = ({ onPlay, currentTrack, isPlaying, onToggleLike, likedTracks, onToast }) => {
+const PodcastView = () => {
+  const { currentTrack, isPlaying, playOrToggle } = usePlayerStore();
+  const { likedTracks, toggleLike } = useLibraryStore();
+  const { addToast } = useUIStore();
   const [selected, setSelected] = useState(null);
 
   const formatDate = (d) => {
@@ -24,7 +31,7 @@ const PodcastView = ({ onPlay, currentTrack, isPlaying, onToggleLike, likedTrack
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, paddingTop: 4 }}>
           <button onClick={() => setSelected(null)} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)', cursor: 'pointer', width: 28, height: 28, borderRadius: 4, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
           <span style={{ fontSize: 10, color: 'var(--text-subdued)', textTransform: 'uppercase', letterSpacing: 1 }}>Podcast</span>
-          <ShareButton track={pod.title} artist={pod.host} type="podcast" onToast={onToast} />
+          <ShareButton track={pod.title} artist={pod.host} type="podcast" onToast={(type, title, msg) => addToast(createToast(type, title, msg))} />
         </div>
 
         <div className="hero-mini" style={{ borderBottom: '1px solid var(--border)', paddingTop: 0, paddingBottom: 16 }}>
@@ -48,7 +55,7 @@ const PodcastView = ({ onPlay, currentTrack, isPlaying, onToggleLike, likedTrack
           <div className="track-list">
             {eps.map((ep, i) => (
               <div key={ep.id} className={`track-row ${currentTrack?.id === ep.id && isPlaying ? 'track-row--active' : ''}`}
-                onClick={() => onPlay({ ...ep, artist: ep.host, podcastName: pod.title, podcastId: pod.id })}
+                onClick={() => playOrToggle({ ...ep, artist: ep.host, podcastName: pod.title, podcastId: pod.id })}
               >
                 <span className="track-row__num">{i + 1}</span>
                 <img className="track-row__img" src={ep.image} alt={ep.title} loading="lazy" />
@@ -61,10 +68,10 @@ const PodcastView = ({ onPlay, currentTrack, isPlaying, onToggleLike, likedTrack
                   <div className="track-row__artist" style={{ fontSize: 9, color: 'var(--text-subdued)', marginTop: 2 }}>{ep.desc}</div>
                 </div>
                 <div className="track-row__actions">
-                  <button className="track-row__action" onClick={(e) => { e.stopPropagation(); onToggleLike?.(ep.id); }}>
+                  <button className="track-row__action" onClick={(e) => { e.stopPropagation(); const wasLiked = toggleLike(ep.id); addToast(createToast(wasLiked ? 'removed' : 'liked', wasLiked ? 'Removed from likes' : 'Added to likes', '')); }}>
                     {likedTracks?.includes(ep.id) ? '♥' : '♡'}
                   </button>
-                  <button className="track-row__action" onClick={(e) => { e.stopPropagation(); onPlay({ ...ep, artist: ep.host, podcastName: pod.title, podcastId: pod.id }); }}>
+                  <button className="track-row__action" onClick={(e) => { e.stopPropagation(); playOrToggle({ ...ep, artist: ep.host, podcastName: pod.title, podcastId: pod.id }); }}>
                     {currentTrack?.id === ep.id && isPlaying ? '⏸' : '▶'}
                   </button>
                 </div>

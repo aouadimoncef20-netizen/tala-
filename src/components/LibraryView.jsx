@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
-import { TRACKS, PODCASTS } from '../data/athir-data';
+import { TRACKS } from '../data/tracks';
+import { PODCASTS } from '../data/podcasts';
+import usePlayerStore from '../stores/playerStore';
+import useLibraryStore from '../stores/libraryStore';
 import './MainContent.css';
 
 const TABS = ['Favorites', 'Podcasts', 'Recent'];
 
-const LibraryView = ({ likedTracks, onPlay, currentTrack, isPlaying }) => {
+const LibraryView = () => {
+  const currentTrack = usePlayerStore(s => s.currentTrack);
+  const isPlaying = usePlayerStore(s => s.isPlaying);
+  const playOrToggle = usePlayerStore(s => s.playOrToggle);
+  const likedTracks = useLibraryStore(s => s.likedTracks);
   const [tab, setTab] = useState('Favorites');
   const likedItems = TRACKS.filter(t => likedTracks?.includes(t.id));
 
@@ -39,7 +46,7 @@ const LibraryView = ({ likedTracks, onPlay, currentTrack, isPlaying }) => {
           ) : (
             <div className="track-list">
               {likedItems.map((track, i) => (
-                <div key={track.id} className={`track-row ${currentTrack?.id === track.id && isPlaying ? 'track-row--active' : ''}`} onClick={() => onPlay({ ...track, podcastName: track.artist, podcastId: track.artistId })}>
+                <div key={track.id} className={`track-row ${currentTrack?.id === track.id && isPlaying ? 'track-row--active' : ''}`} onClick={() => playOrToggle({ ...track, podcastName: track.artist, podcastId: track.artistId })}>
                   <span className="track-row__num">{i + 1}</span>
                   <img className="track-row__img" src={track.image} alt={track.title} loading="lazy" />
                   <div className="track-row__info">
@@ -82,7 +89,7 @@ const LibraryView = ({ likedTracks, onPlay, currentTrack, isPlaying }) => {
           </div>
           <div className="track-list">
             {TRACKS.slice(0, 8).map((track, i) => (
-              <div key={track.id} className={`track-row ${currentTrack?.id === track.id && isPlaying ? 'track-row--active' : ''}`} onClick={() => onPlay({ ...track, podcastName: track.artist, podcastId: track.artistId })}>
+              <div key={track.id} className={`track-row ${currentTrack?.id === track.id && isPlaying ? 'track-row--active' : ''}`} onClick={() => playOrToggle({ ...track, podcastName: track.artist, podcastId: track.artistId })}>
                 <span className="track-row__num">{i + 1}</span>
                 <img className="track-row__img" src={track.image} alt={track.title} loading="lazy" />
                 <div className="track-row__info">

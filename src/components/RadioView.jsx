@@ -1,8 +1,13 @@
 import React from 'react';
-import { RADIO_STATIONS } from '../data/athir-data';
+import { RADIO_STATIONS } from '../data/radio';
+import usePlayerStore from '../stores/playerStore';
 import './MainContent.css';
 
-const RadioView = ({ onPlay, currentTrack, isPlaying }) => {
+const RadioView = () => {
+  const currentTrack = usePlayerStore(s => s.currentTrack);
+  const isPlaying = usePlayerStore(s => s.isPlaying);
+  const playOrToggle = usePlayerStore(s => s.playOrToggle);
+
   const isActive = (id) => currentTrack?.id === id && currentTrack?.type === 'radio' && isPlaying;
 
   return (
@@ -17,7 +22,7 @@ const RadioView = ({ onPlay, currentTrack, isPlaying }) => {
 
       <div className="scroll">
         {RADIO_STATIONS.map(radio => (
-          <div key={radio.id} className="card" onClick={() => onPlay({
+          <div key={radio.id} className="card" onClick={() => playOrToggle({
             id: radio.id, title: radio.name, artist: radio.freq, type: 'radio',
             image: radio.image, duration: 'Live', podcastName: radio.name,
           })}>
@@ -57,7 +62,7 @@ const RadioView = ({ onPlay, currentTrack, isPlaying }) => {
             <div
               key={radio.id}
               className={`track-row ${isActive(radio.id) ? 'track-row--active' : ''}`}
-              onClick={() => onPlay({
+              onClick={() => playOrToggle({
                 id: radio.id, title: radio.name, artist: radio.freq, type: 'radio',
                 image: radio.image, duration: 'Live', podcastName: radio.name,
               })}

@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "explore": "Explorer",
+    "radio": "Radio",
+    "podcasts": "Podcasts",
+    "library": "Bibliothèque",
+    "playlists": "Listes de lecture",
+    "audiobooks": "Livres audio"
+  },
+  "home": {
+    "trending": "Tendances",
+    "artists": "Artistes populaires",
+    "liveRadio": "Radio en direct",
+    "albums": "Nouveaux albums",
+    "genres": "Parcourir les genres",
+    "viewAll": "Voir tout"
+  },
+  "player": {
+    "selectTrack": "Sélectionnez un morceau pour commencer",
+    "nowPlaying": "En cours de lecture",
+    "live": "EN DIRECT",
+    "upNext": "Suivant",
+    "addToQueue": "Ajouter à la file"
+  },
+  "search": {
+    "placeholder": "Rechercher artistes, morceaux...",
+    "placeholderShort": "Rechercher...",
+    "tracks": "Morceaux",
+    "artists": "Artistes",
+    "noResults": "Aucun résultat trouvé"
+  },
+  "library": {
+    "title": "Votre bibliothèque",
+    "likedTracks": "Morceaux aimés",
+    "empty": "Aucun morceau aimé pour l'instant",
+    "emptyHint": "Appuyez sur ♥ d'un morceau pour le sauvegarder ici"
+  },
+  "playlist": {
+    "create": "Créer une liste de lecture",
+    "name": "Nom de la liste",
+    "createBtn": "Créer",
+    "cancel": "Annuler",
+    "delete": "Supprimer la liste"
+  },
+  "artist": {
+    "tracks": "Morceaux",
+    "albums": "Albums",
+    "related": "Artistes similaires",
+    "playAlbum": "Lire l'album",
+    "followers": "Abonnés"
+  },
+  "fullplayer": {
+    "sleepTimer": "Minuteur de sommeil",
+    "minutes": "min",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "speed": "Vitesse"
+  },
+  "premium": {
+    "title": "Tala Premium",
+    "free": "Gratuit",
+    "premium": "Premium",
+    "family": "Famille",
+    "perMonth": "/mois",
+    "getStarted": "Commencer",
+    "features": "Fonctionnalités"
+  },
+  "common": {
+    "search": "Rechercher",
+    "back": "Retour",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "share": "Partager",
+    "copy": "Copier",
+    "addToQueue": "Ajouter à la file",
+    "addToPlaylist": "Ajouter à la liste de lecture"
+  },
+  "toast": {
+    "liked": "Ajouté aux favoris ♥",
+    "unliked": "Retiré des favoris",
+    "addedToQueue": "Ajouté à la file d'attente",
+    "copied": "Copié dans le presse-papier"
+  },
+  "profile": {
+    "title": "Profil",
+    "stats": "Statistiques",
+    "likedCount": "Favoris",
+    "theme": "Thème",
+    "language": "Langue",
+    "badges": "Badges",
+    "followers": "Abonnés",
+    "following": "Abonnements",
+    "joined": "Inscrit",
+    "recentlyPlayed": "Récemment écoutés",
+    "subtitle": "Votre univers d'écoute"
+  }
+}

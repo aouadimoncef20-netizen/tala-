@@ -1,15 +1,33 @@
 import React from 'react';
-import { ARTISTS, TRACKS, ALBUMS } from '../data/athir-data';
+import { ARTISTS } from '../data/artists';
+import { TRACKS } from '../data/tracks';
+import { ALBUMS } from '../data/albums';
 import CommentSection from './CommentSection';
+import usePlayerStore from '../stores/playerStore';
+import useUIStore from '../stores/uiStore';
+import { generateRadioStream } from '../data/recommendations';
 import './ArtistDetail.css';
 
-const ArtistDetail = ({ artistId, onPlay, currentTrack, isPlaying, onOpenAlbum }) => {
+const ArtistDetail = ({ artistId }) => {
+  const currentTrack = usePlayerStore(s => s.currentTrack);
+  const isPlaying = usePlayerStore(s => s.isPlaying);
+  const playOrToggle = usePlayerStore(s => s.playOrToggle);
+  const startRadio = usePlayerStore(s => s.startRadio);
+  const setSelectedAlbum = useUIStore(s => s.setSelectedAlbum);
+
   const artist = ARTISTS.find(a => a.id === artistId);
   if (!artist) return <div className="empty-state"><div className="empty-state__text">Artist not found</div></div>;
 
   const tracks = TRACKS.filter(t => t.artistId === artistId);
   const albums = ALBUMS.filter(a => a.artistId === artistId);
   const isTrackActive = (id) => currentTrack?.id === id && isPlaying;
+
+  const handleStartRadio = () => {
+    if (tracks.length > 0) {
+      const stream = generateRadioStream(tracks[0].id, 20);
+      if (stream.length > 0) startRadio(stream);
+    }
+  };
 
   return (
     <div className="artist">
@@ -26,8 +44,11 @@ const ArtistDetail = ({ artistId, onPlay, currentTrack, isPlaying, onOpenAlbum }
             <span>{artist.followers} followers</span>
           </div>
           <p className="artist__desc">{artist.desc}</p>
-          <button className="artist__play-btn" onClick={() => tracks.length > 0 && onPlay({ ...tracks[0], podcastName: artist.name, podcastId: artist.id })}>
+          <button className="artist__play-btn" onClick={() => tracks.length > 0 && playOrToggle({ ...tracks[0], podcastName: artist.name, podcastId: artist.id })}>
             ▶ Play
+          </button>
+          <button className="artist__radio-btn" onClick={handleStartRadio} title="Start artist radio">
+            📻 Start Radio
           </button>
         </div>
       </div>
@@ -42,7 +63,7 @@ const ArtistDetail = ({ artistId, onPlay, currentTrack, isPlaying, onOpenAlbum }
             <div
               key={track.id}
               className={`track-row ${isTrackActive(track.id) ? 'track-row--active' : ''}`}
-              onClick={() => onPlay({ ...track, podcastName: artist.name, podcastId: artist.id })}
+              onClick={() => playOrToggle({ ...track, podcastName: artist.name, podcastId: artist.id })}
             >
               <span className="track-row__num">{i + 1}</span>
               <img className="track-row__img" src={track.image} alt={track.title} loading="lazy" />
@@ -55,7 +76,7 @@ const ArtistDetail = ({ artistId, onPlay, currentTrack, isPlaying, onOpenAlbum }
               </div>
               <span className="track-row__duration">{track.duration}</span>
               <div className="track-row__actions">
-                <button className="track-row__action" onClick={(e) => { e.stopPropagation(); onPlay({ ...track, podcastName: artist.name, podcastId: artist.id }); }}>
+                <button className="track-row__action" onClick={(e) => { e.stopPropagation(); playOrToggle({ ...track, podcastName: artist.name, podcastId: artist.id }); }}>
                   {isTrackActive(track.id) ? '⏸' : '▶'}
                 </button>
               </div>
@@ -75,7 +96,7 @@ const ArtistDetail = ({ artistId, onPlay, currentTrack, isPlaying, onOpenAlbum }
           </div>
           <div className="scroll">
             {albums.map(album => (
-              <div key={album.id} className="card" onClick={() => onOpenAlbum?.(album.id)}>
+              <div key={album.id} className="card" onClick={() => setSelectedAlbum(album.id)}>
                 <div className="card__img-wrap">
                   <img className="card__img" src={album.image} alt={album.title} loading="lazy" />
                 </div>

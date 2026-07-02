@@ -103,3 +103,31 @@
 .artist__play-btn:active {
   transform: translateY(0) scale(0.97);
 }
+
+.artist__radio-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  margin-left: 10px;
+}
+
+.artist__radio-btn:hover {
+  border-color: var(--accent-amber, #F5A623);
+  color: var(--accent-amber, #F5A623);
+  background: rgba(245, 166, 35, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(245, 166, 35, 0.15);
+}
+
+.artist__radio-btn:active {
+  transform: translateY(0) scale(0.97);
+}

@@ -1,20 +1,28 @@
-import React from 'react';
-import { ARTISTS, RADIO_STATIONS, PODCASTS, GENRES } from '../data/athir-data';
+﻿import React, { memo } from 'react';
+import { ARTISTS } from '../data/artists';
+import { RADIO_STATIONS } from '../data/radio';
+import { PODCASTS } from '../data/podcasts';
+import { GENRES } from '../data/genres';
+import useUIStore from '../stores/uiStore';
 import './Sidebar.css';
 
 const NAV_ITEMS = [
-  { key: 'home', label: 'Home', icon: '◇' },
-  { key: 'explore', label: 'Explore', icon: '◎' },
-  { key: 'radio', label: 'Radio Live', icon: '◈' },
-  { key: 'podcasts', label: 'Podcasts', icon: '▣' },
-  { key: 'library', label: 'Library', icon: '▤' },
-  { key: 'playlists', label: 'Playlists', icon: '≡' },
+  { key: 'home', label: 'Home', icon: 'â—‡' },
+  { key: 'explore', label: 'Explore', icon: 'â—Ž' },
+  { key: 'radio', label: 'Radio Live', icon: 'â—ˆ' },
+  { key: 'podcasts', label: 'Podcasts', icon: 'â–£' },
+  { key: 'library', label: 'Library', icon: 'â–¤' },
+  { key: 'playlists', label: 'Playlists', icon: 'â‰¡' },
   { key: 'audiobooks', label: 'Audiobooks', icon: '◆' },
+  { key: 'stats', label: 'Stats', icon: '📊' },
+  { key: 'upload', label: 'Submit Music', icon: '🎤' },
 ];
 
-const Sidebar = ({ activeView, setActiveView, onOpenArtist }) => {
+const Sidebar = memo(() => {
+  const activeView = useUIStore(s => s.activeView);
+  const setActiveView = useUIStore(s => s.setActiveView);
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" aria-label="Main navigation">
       {/* Brand */}
       <div className="sidebar__brand">
         <div className="sidebar__logo">A</div>
@@ -31,6 +39,8 @@ const Sidebar = ({ activeView, setActiveView, onOpenArtist }) => {
             key={item.key}
             className={`sidebar__item ${activeView === item.key ? 'sidebar__item--active' : ''}`}
             onClick={() => setActiveView(item.key)}
+            title={item.label}
+            aria-label={item.label}
           >
             <span className="sidebar__item-icon">{item.icon}</span>
             <span>{item.label}</span>
@@ -71,7 +81,7 @@ const Sidebar = ({ activeView, setActiveView, onOpenArtist }) => {
             <img className="sidebar__recent-img" src={a.image} alt={a.name} loading="lazy" />
             <div className="sidebar__recent-info">
               <div className="sidebar__recent-title">{a.name}</div>
-              <div className="sidebar__recent-artist">{a.genre} · {a.followers}</div>
+              <div className="sidebar__recent-artist">{a.genre} Â· {a.followers}</div>
             </div>
           </div>
         ))}
@@ -79,11 +89,12 @@ const Sidebar = ({ activeView, setActiveView, onOpenArtist }) => {
 
       {/* Footer */}
       <div className="sidebar__footer">
-        <span>Tala © 2026</span>
+        <span>Tala Â© 2026</span>
         <span>Privacy</span>
       </div>
     </aside>
   );
-};
+});
 
 export default Sidebar;
+

@@ -1,0 +1,111 @@
+/* ===== LOADING SCREEN ===== */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.loading-screen--fade-out {
+  opacity: 0;
+  transform: scale(1.05);
+}
+
+.loading-screen__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Logo with expanding rings */
+.loading-screen__logo {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.loading-screen__ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  opacity: 0;
+  animation: expandRing 2s ease-out infinite;
+}
+
+.loading-screen__ring--1 {
+  width: 60px;
+  height: 60px;
+  animation-delay: 0s;
+}
+
+.loading-screen__ring--2 {
+  width: 60px;
+  height: 60px;
+  animation-delay: 0.7s;
+}
+
+.loading-screen__ring--3 {
+  width: 60px;
+  height: 60px;
+  animation-delay: 1.4s;
+}
+
+@keyframes expandRing {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.loading-screen__letter {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-amber));
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: 900;
+  color: #0C0F14;
+  z-index: 1;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Loading text */
+.loading-screen__text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  animation: fadeInUp 0.4s ease;
+  min-height: 20px;
+}
+
+/* Progress bar */
+.loading-screen__progress-track {
+  width: 200px;
+  height: 3px;
+  background: var(--bg-elevated);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.loading-screen__progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-amber));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}

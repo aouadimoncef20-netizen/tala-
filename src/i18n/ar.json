@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "الرئيسية",
+    "explore": "استكشاف",
+    "radio": "راديو",
+    "podcasts": "بودكاست",
+    "library": "مكتبتي",
+    "playlists": "قوائم التشغيل",
+    "audiobooks": "كتب صوتية"
+  },
+  "home": {
+    "trending": "الأكثر رواجاً",
+    "artists": "فنانون مشهورون",
+    "liveRadio": "راديو مباشر",
+    "albums": "ألبومات جديدة",
+    "genres": "تصفح الأنواع",
+    "viewAll": "عرض الكل"
+  },
+  "player": {
+    "selectTrack": "اختر أغنية للبدء",
+    "nowPlaying": "يعمل الآن",
+    "live": "مباشر",
+    "upNext": "التالي",
+    "addToQueue": "أضف إلى قائمة الانتظار"
+  },
+  "search": {
+    "placeholder": "ابحث عن فنانين، أغاني...",
+    "placeholderShort": "بحث...",
+    "tracks": "أغاني",
+    "artists": "فنانين",
+    "noResults": "لا توجد نتائج"
+  },
+  "library": {
+    "title": "مكتبتي",
+    "likedTracks": "الأغاني المعجبة",
+    "empty": "لا توجد أغاني معجبة بعد",
+    "emptyHint": "اضغط ♥ على أي أغنية لحفظها هنا"
+  },
+  "playlist": {
+    "create": "إنشاء قائمة تشغيل",
+    "name": "اسم قائمة التشغيل",
+    "createBtn": "إنشاء",
+    "cancel": "إلغاء",
+    "delete": "حذف قائمة التشغيل"
+  },
+  "artist": {
+    "tracks": "أغاني",
+    "albums": "ألبومات",
+    "related": "فنانون مشابهون",
+    "playAlbum": "تشغيل الألبوم",
+    "followers": "متابعون"
+  },
+  "fullplayer": {
+    "sleepTimer": "مؤقت النوم",
+    "minutes": "دقيقة",
+    "cancel": "إلغاء",
+    "close": "إغلاق",
+    "speed": "السرعة"
+  },
+  "premium": {
+    "title": "تالا بريميوم",
+    "free": "مجاني",
+    "premium": "بريميوم",
+    "family": "عائلي",
+    "perMonth": "/شهر",
+    "getStarted": "ابدأ الآن",
+    "features": "المميزات"
+  },
+  "common": {
+    "search": "بحث",
+    "back": "رجوع",
+    "loading": "جارٍ التحميل...",
+    "error": "حدث خطأ ما",
+    "retry": "إعادة المحاولة",
+    "share": "مشاركة",
+    "copy": "نسخ",
+    "addToQueue": "أضف إلى قائمة الانتظار",
+    "addToPlaylist": "أضف إلى قائمة التشغيل"
+  },
+  "toast": {
+    "liked": "تم الإعجاب ♥",
+    "unliked": "تم إزالة الإعجاب",
+    "addedToQueue": "تمت الإضافة إلى قائمة الانتظار",
+    "copied": "تم النسخ إلى الحافظة"
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "stats": "الإحصائيات",
+    "likedCount": "معجب",
+    "theme": "المظهر",
+    "language": "اللغة",
+    "badges": "الشارات",
+    "followers": "متابعون",
+    "following": "يتابع",
+    "joined": "انضم",
+    "recentlyPlayed": "تم تشغيلها مؤخراً",
+    "subtitle": "عالم الاستماع الخاص بك"
+  }
+}

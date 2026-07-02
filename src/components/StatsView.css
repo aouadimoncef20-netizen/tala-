@@ -1,0 +1,209 @@
+/* ===== STATS VIEW ===== */
+.stats {
+  padding-bottom: 40px;
+}
+
+.stats__header {
+  margin-bottom: 24px;
+}
+
+.stats__title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.stats__subtitle {
+  font-size: 12px;
+  color: var(--text-subdued);
+}
+
+/* ===== STAT CARDS GRID ===== */
+.stats__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.stats__card {
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: statsCardIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.stats__card:nth-child(1) { animation-delay: 0.05s; }
+.stats__card:nth-child(2) { animation-delay: 0.10s; }
+.stats__card:nth-child(3) { animation-delay: 0.15s; }
+.stats__card:nth-child(4) { animation-delay: 0.20s; }
+
+.stats__card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-light);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes statsCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.stats__card-icon {
+  font-size: 28px;
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.stats__card--liked .stats__card-icon { color: #e74c3c; }
+.stats__card--time .stats__card-icon { color: #F5A623; }
+.stats__card--artists .stats__card-icon { color: #4A9BAA; }
+.stats__card--genres .stats__card-icon { color: #5AA87A; }
+
+.stats__card-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stats__card-label {
+  font-size: 11px;
+  color: var(--text-subdued);
+  font-weight: 500;
+}
+
+/* ===== GENRE BREAKDOWN ===== */
+.stats__genre-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stats__genre-item {
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  animation: fadeIn 0.3s ease both;
+}
+
+.stats__genre-item:hover {
+  border-color: var(--border-light);
+  background: var(--bg-card-hover);
+}
+
+.stats__genre-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.stats__genre-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stats__genre-count {
+  font-size: 11px;
+  color: var(--text-subdued);
+  font-weight: 500;
+}
+
+.stats__genre-bar-bg {
+  height: 6px;
+  background: var(--bg-elevated);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stats__genre-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ===== TOP ARTISTS ===== */
+.stats__artist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stats__artist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeIn 0.3s ease both;
+}
+
+.stats__artist-item:hover {
+  background: var(--bg-card);
+  transform: translateX(2px);
+}
+
+.stats__artist-rank {
+  width: 20px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-subdued);
+  flex-shrink: 0;
+}
+
+.stats__artist-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.stats__artist-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.stats__artist-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.stats__artist-genre {
+  font-size: 10px;
+  color: var(--text-subdued);
+  display: block;
+  margin-top: 1px;
+}
+
+.stats__artist-count {
+  font-size: 11px;
+  color: var(--text-subdued);
+  font-weight: 500;
+  flex-shrink: 0;
+}

@@ -1,9 +1,22 @@
 import React from 'react';
-import { ALBUMS, TRACKS, ARTISTS } from '../data/athir-data';
+import { ALBUMS } from '../data/albums';
+import { TRACKS } from '../data/tracks';
+import { ARTISTS } from '../data/artists';
 import CommentSection from './CommentSection';
+import ReviewSection from './ReviewSection';
+import usePlayerStore from '../stores/playerStore';
+import useUIStore from '../stores/uiStore';
+import { generateRadioStream } from '../data/recommendations';
 import './AlbumDetail.css';
 
-const AlbumDetail = ({ albumId, onPlay, currentTrack, isPlaying, onOpenArtist }) => {
+const AlbumDetail = ({ albumId }) => {
+  const currentTrack = usePlayerStore(s => s.currentTrack);
+  const isPlaying = usePlayerStore(s => s.isPlaying);
+  const playOrToggle = usePlayerStore(s => s.playOrToggle);
+  const startRadio = usePlayerStore(s => s.startRadio);
+  const setSelectedArtist = useUIStore(s => s.setSelectedArtist);
+  const addToast = useUIStore(s => s.addToast);
+
   const album = ALBUMS.find(a => a.id === albumId);
   if (!album) return <div className="empty-state"><div className="empty-state__text">Album not found</div></div>;
 
@@ -12,6 +25,13 @@ const AlbumDetail = ({ albumId, onPlay, currentTrack, isPlaying, onOpenArtist })
     ? TRACKS.filter(t => t.artistId === album.artistId && t.album === album.title)
     : TRACKS.filter(t => t.album === album.title);
   const isTrackActive = (id) => currentTrack?.id === id && isPlaying;
+
+  const handleStartRadio = () => {
+    if (albumTracks.length > 0) {
+      const stream = generateRadioStream(albumTracks[0].id, 20);
+      if (stream.length > 0) startRadio(stream);
+    }
+  };
 
   return (
     <div className="album">
@@ -23,7 +43,7 @@ const AlbumDetail = ({ albumId, onPlay, currentTrack, isPlaying, onOpenArtist })
           <span className="album__label">Album</span>
           <h1 className="album__title">{album.title}</h1>
           {artist && (
-            <span className="album__artist" onClick={() => onOpenArtist?.(artist.id)}>
+            <span className="album__artist" onClick={() => setSelectedArtist(artist.id)}>
               {artist.name}
             </span>
           )}
@@ -32,8 +52,11 @@ const AlbumDetail = ({ albumId, onPlay, currentTrack, isPlaying, onOpenArtist })
             <span className="album__dot">·</span>
             <span>{album.tracks} tracks</span>
           </div>
-          <button className="album__play-btn" onClick={() => albumTracks.length > 0 && onPlay({ ...albumTracks[0], podcastName: artist?.name, podcastId: artist?.id })}>
+          <button className="album__play-btn" onClick={() => albumTracks.length > 0 && playOrToggle({ ...albumTracks[0], podcastName: artist?.name, podcastId: artist?.id })}>
             ▶ Play Album
+          </button>
+          <button className="album__radio-btn" onClick={handleStartRadio} title="Start album radio">
+            📻 Start Radio
           </button>
         </div>
       </div>
@@ -54,7 +77,7 @@ const AlbumDetail = ({ albumId, onPlay, currentTrack, isPlaying, onOpenArtist })
               <div
                 key={track.id}
                 className={`track-row ${isTrackActive(track.id) ? 'track-row--active' : ''}`}
-                onClick={() => onPlay({ ...track, podcastName: artist?.name, podcastId: artist?.id })}
+                onClick={() => playOrToggle({ ...track, podcastName: artist?.name, podcastId: artist?.id })}
               >
                 <span className="track-row__num">{i + 1}</span>
                 <div className="track-row__info">
@@ -75,6 +98,7 @@ const AlbumDetail = ({ albumId, onPlay, currentTrack, isPlaying, onOpenArtist })
         )}
       </section>
 
+      <ReviewSection albumId={album.id} />
       <CommentSection contentId={album.id} contentType="album" title={album.title} />
     </div>
   );
