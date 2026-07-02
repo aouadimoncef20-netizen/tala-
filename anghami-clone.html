@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tala — Algerian Audio Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #0C0F14;
+      --bg-secondary: #12171F;
+      --bg-elevated: #1A212C;
+      --bg-card: #1A212C;
+      --bg-card-hover: #232C3B;
+      --bg-glass: rgba(26, 33, 44, 0.6);
+      --text-primary: #EEECE8;
+      --text-secondary: #9BA3AF;
+      --text-subdued: #6B7280;
+      --accent: #D4875E;
+      --accent-hover: #E09B75;
+      --accent-glow: rgba(212, 135, 94, 0.2);
+      --accent-teal: #4A9BAA;
+      --accent-amber: #C9A04A;
+      --border: #232C3B;
+      --border-light: #2D384A;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0C0F14; }
+    ::-webkit-scrollbar-thumb { background: #232C3B; border-radius: 8px; }
+    ::-webkit-scrollbar-thumb:hover { background: #D4875E; }
+
+    body { background: var(--bg-primary); color: var(--text-primary); }
+
+    /* Glass effect */
+    .glass {
+      background: var(--bg-glass);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .glass-player {
+      background: rgba(12, 15, 20, 0.92);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+    }
+
+    /* Sidebar */
+    .sidebar-link {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sidebar-link:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      transform: translateX(2px);
+    }
+    .sidebar-link.active {
+      background: linear-gradient(90deg, rgba(212, 135, 94, 0.08), transparent);
+      color: var(--accent);
+      font-weight: 600;
+      border-right: 3px solid var(--accent);
+    }
+
+    /* Cards */
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Play overlay */
+    .play-btn-overlay {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 0;
+    }
+    .group:hover .play-btn-overlay {
+      opacity: 1;
+    }
+    .group:hover .play-btn-overlay .play-icon {
+      transform: translateY(0) scale(1);
+    }
+    .play-icon {
+      transform: translateY(8px) scale(0.85);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Copper gradient text */
+    .text-gradient-copper {
+      background: linear-gradient(135deg, var(--accent), var(--accent-amber));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Section underline */
+    .section-title {
+      position: relative;
+      display: inline-block;
+    }
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 36px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-amber));
+      border-radius: 2px;
+    }
+
+    /* Hero animation */
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .hero-bg {
+      background: linear-gradient(-45deg, #0C0F14, #12171F, #1A212C, #0C0F14);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+
+    /* Player progress */
+    .progress-fill {
+      background: linear-gradient(90deg, var(--accent), var(--accent-amber));
+    }
+
+    /* Equalizer bars */
+    .eq-bar {
+      animation: eq 0.8s ease-in-out infinite alternate;
+    }
+    .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+    .eq-bar:nth-child(3) { animation-delay: 0.4s; }
+    .eq-bar:nth-child(4) { animation-delay: 0.6s; }
+    @keyframes eq {
+      0% { height: 6px; }
+      100% { height: 20px; }
+    }
+
+    /* Track row hover */
+    .track-row {
+      transition: all 0.2s ease;
+    }
+    .track-row:hover {
+      background: var(--bg-card);
+      transform: translateX(2px);
+    }
+
+    /* Glow effect on buttons */
+    .btn-glow:hover {
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    /* Pulse for live indicator */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .live-dot {
+      animation: pulse 1.5s infinite;
+    }
+
+    /* RTL support toggle */
+    [dir="rtl"] .sidebar-link.active {
+      border-right: none;
+      border-left: 3px solid var(--accent);
+    }
+  </style>
+</head>
+<body class="overflow-hidden h-screen">
+
+  <!-- ==================== MAIN LAYOUT ==================== -->
+  <div class="flex h-full">
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="w-[220px] bg-[#0C0F14]/95 border-r border-[#232C3B] flex flex-col shrink-0" style="backdrop-filter:blur(12px)">
+
+      <!-- Logo / Brand -->
+      <div class="px-4 pt-5 pb-4 border-b border-[#232C3B]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-[34px] h-[34px] rounded-lg bg-[#D4875E] flex items-center justify-center text-[#0C0F14] font-extrabold text-lg shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.25);">
+            T
+          </div>
+          <div>
+            <span class="text-lg font-bold" style="background: linear-gradient(135deg, #D4875E, #C9A04A); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Tala</span>
+            <p class="text-[8px] uppercase tracking-[1.5px] text-[#D4875E] font-semibold">Algerian Audio</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Navigation -->
+      <nav class="px-2.5 mt-3 space-y-0.5">
+        <a href="#" class="sidebar-link active flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium">
+          <i class="fa-solid fa-house text-[#D4875E] w-5 text-center"></i> Home
+        </a>
+        <a href="#" class="sidebar-link flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-[#9BA3AF]">
+          <i class="fa-solid fa-compass w-5 text-center"></i> Explore
+        </a>
+        <a href="#" class="sidebar-link flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-[#9BA3AF]">
+          <i class="fa-solid fa-radio w-5 text-center"></i> Radio
+        </a>
+        <a href="#" class="sidebar-link flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-[#9BA3AF]">
+          <i class="fa-solid fa-podcast w-5 text-center"></i> Podcasts
+        </a>
+        <a href="#" class="sidebar-link flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-[#9BA3AF]">
+          <i class="fa-solid fa-headphones w-5 text-center"></i> Audiobooks
+        </a>
+      </nav>
+
+      <!-- Library Section -->
+      <div class="mt-5 px-2.5">
+        <div class="flex items-center justify-between px-3 mb-2">
+          <span class="text-[9px] uppercase tracking-wider text-[#6B7280] font-semibold">Your Library</span>
+          <i class="fa-solid fa-plus text-[#6B7280] text-[11px] cursor-pointer hover:text-[#D4875E] transition-colors"></i>
+        </div>
+        <div class="space-y-0.5">
+          <a href="#" class="sidebar-link flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9BA3AF]">
+            <i class="fa-solid fa-heart text-[#D4875E] w-5 text-center"></i> Favorites
+          </a>
+          <a href="#" class="sidebar-link flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9BA3AF]">
+            <i class="fa-solid fa-clock w-5 text-center"></i> Recently Played
+          </a>
+          <a href="#" class="sidebar-link flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9BA3AF]">
+            <i class="fa-solid fa-list w-5 text-center"></i> Playlists
+          </a>
+          <a href="#" class="sidebar-link flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9BA3AF]">
+            <i class="fa-solid fa-download w-5 text-center"></i> Downloads
+          </a>
+        </div>
+      </div>
+
+      <!-- Genre Quick Stats -->
+      <div class="mt-4 px-2.5">
+        <div class="px-3 mb-2">
+          <span class="text-[9px] uppercase tracking-wider text-[#6B7280] font-semibold">Genres</span>
+        </div>
+        <div class="space-y-0.5 px-2">
+          <div class="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-[#9BA3AF] cursor-pointer hover:bg-[#1A212C] hover:text-[#EEECE8] transition-all">
+            <span class="w-2 h-2 rounded-full bg-[#D32F2F]"></span> Rai
+            <span class="ml-auto text-[9px] text-[#6B7280] font-semibold">12.5M</span>
+          </div>
+          <div class="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-[#9BA3AF] cursor-pointer hover:bg-[#1A212C] hover:text-[#EEECE8] transition-all">
+            <span class="w-2 h-2 rounded-full bg-[#2E7D32]"></span> Chaabi
+            <span class="ml-auto text-[9px] text-[#6B7280] font-semibold">5.9M</span>
+          </div>
+          <div class="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-[#9BA3AF] cursor-pointer hover:bg-[#1A212C] hover:text-[#EEECE8] transition-all">
+            <span class="w-2 h-2 rounded-full bg-[#F5A623]"></span> Kabyle
+            <span class="ml-auto text-[9px] text-[#6B7280] font-semibold">4.1M</span>
+          </div>
+          <div class="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-[#9BA3AF] cursor-pointer hover:bg-[#1A212C] hover:text-[#EEECE8] transition-all">
+            <span class="w-2 h-2 rounded-full bg-[#00ACC1]"></span> Rap Dz
+            <span class="ml-auto text-[9px] text-[#6B7280] font-semibold">3.4M</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Playlists -->
+      <div class="mt-4 px-2.5 flex-1 overflow-y-auto">
+        <div class="border-t border-[#232C3B] pt-3 px-3 space-y-1.5">
+          <a href="#" class="block text-[11px] text-[#6B7280] hover:text-[#9BA3AF] transition-colors truncate">🎵 Rai Classics</a>
+          <a href="#" class="block text-[11px] text-[#6B7280] hover:text-[#9BA3AF] transition-colors truncate">🔥 Chaabi Essentials</a>
+          <a href="#" class="block text-[11px] text-[#6B7280] hover:text-[#9BA3AF] transition-colors truncate">🌙 Kabyle Nights</a>
+          <a href="#" class="block text-[11px] text-[#6B7280] hover:text-[#9BA3AF] transition-colors truncate">🎤 Rap Dz Cypher</a>
+          <a href="#" class="block text-[11px] text-[#6B7280] hover:text-[#9BA3AF] transition-colors truncate">🪘 Gnawa Spirit</a>
+        </div>
+      </div>
+
+      <!-- User Profile -->
+      <div class="px-2.5 pb-3 border-t border-[#232C3B] pt-2.5 mt-1">
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-[#1A212C] transition-colors">
+          <div class="w-8 h-8 rounded-md bg-[#D4875E] flex items-center justify-center text-[#0C0F14] text-xs font-bold">Y</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate text-[#EEECE8]">Youssef</p>
+            <p class="text-[9px] text-[#D4875E] font-medium">✦ Premium</p>
+          </div>
+          <i class="fa-solid fa-chevron-down text-[#6B7280] text-[10px]"></i>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="flex-1 flex flex-col min-w-0">
+
+      <!-- Header -->
+      <header class="glass px-6 py-3 flex items-center justify-between shrink-0" style="height:56px;">
+        <div class="flex items-center gap-4">
+          <div class="flex gap-1.5">
+            <button class="w-[30px] h-[30px] rounded-md bg-[#1A212C] flex items-center justify-center hover:bg-[#232C3B] transition-colors border border-[#2D384A]">
+              <i class="fa-solid fa-chevron-left text-[#9BA3AF] text-[10px]"></i>
+            </button>
+            <button class="w-[30px] h-[30px] rounded-md bg-[#1A212C] flex items-center justify-center hover:bg-[#232C3B] transition-colors border border-[#2D384A]">
+              <i class="fa-solid fa-chevron-right text-[#9BA3AF] text-[10px]"></i>
+            </button>
+          </div>
+          <div class="relative ml-3">
+            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280] text-xs"></i>
+            <input type="text" placeholder="Search tracks, artists, podcasts..."
+                   class="bg-[#1A212C] text-sm text-[#9BA3AF] placeholder-[#6B7280] pl-9 pr-4 py-1.5 rounded-md w-72 focus:outline-none focus:ring-1 focus:ring-[#D4875E]/40 focus:bg-[#232C3B] transition-all border border-[#2D384A] focus:border-[#D4875E]/30" />
+          </div>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <!-- Language Switcher -->
+          <div class="flex items-center gap-1 mr-1">
+            <button class="text-[10px] px-2 py-1 rounded border border-[#D4875E] bg-[#D4875E]/10 text-[#D4875E] font-medium">EN</button>
+            <button class="text-[10px] px-2 py-1 rounded border border-[#232C3B] text-[#6B7280] hover:border-[#2D384A] transition-colors">عربي</button>
+            <button class="text-[10px] px-2 py-1 rounded border border-[#232C3B] text-[#6B7280] hover:border-[#2D384A] transition-colors">FR</button>
+          </div>
+          <button class="text-[10px] uppercase tracking-wider font-semibold text-[#D4875E] bg-[#D4875E]/10 px-4 py-1.5 rounded-md hover:bg-[#D4875E]/20 transition-all border border-[#D4875E]/20">
+            ✦ Premium
+          </button>
+          <div class="flex items-center gap-1.5 text-[#6B7280] text-xs border-l border-[#232C3B] pl-3">
+            <button class="p-1.5 hover:bg-[#1A212C] rounded-md transition-colors relative">
+              <i class="fa-regular fa-bell text-sm"></i>
+              <span class="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-[#4A9BAA] rounded-full text-[7px] font-bold flex items-center justify-center text-white">3</span>
+            </button>
+            <button class="p-1.5 hover:bg-[#1A212C] rounded-md transition-colors">
+              <i class="fa-regular fa-clock text-sm"></i>
+            </button>
+            <button class="p-1.5 hover:bg-[#1A212C] rounded-md transition-colors" title="Toggle theme">
+              ☾
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Scrollable Content -->
+      <div class="flex-1 overflow-y-auto bg-[#0C0F14]">
+
+        <!-- Hero Section -->
+        <div class="hero-bg px-6 pt-6 pb-8">
+
+          <!-- Hero Banner -->
+          <div class="relative rounded-xl overflow-hidden mb-8 group cursor-pointer border border-[#232C3B]">
+            <div class="absolute inset-0 bg-gradient-to-r from-[#0C0F14]/90 via-[#0C0F14]/40 to-transparent z-10"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0C0F14]/80 via-transparent to-transparent z-10"></div>
+            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&h=500&fit=crop"
+                 alt="Concert" class="w-full h-56 object-cover object-center group-hover:scale-105 transition-transform duration-700" />
+            <div class="absolute bottom-0 left-0 z-20 p-7">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-[9px] uppercase tracking-[2px] text-[#D4875E] font-semibold">Editor's Pick</span>
+                <span class="w-1 h-1 rounded-full bg-[#4A9BAA] live-dot"></span>
+                <span class="text-[9px] text-[#4A9BAA] font-medium">Trending</span>
+              </div>
+              <h1 class="text-4xl font-black mb-1.5">Sounds of Algeria</h1>
+              <p class="text-[#9BA3AF] text-sm max-w-lg mb-4">From Rai to Chaabi, Kabyle to Rap Dz — the best of Algerian music curated daily.</p>
+              <div class="flex items-center gap-3">
+                <button class="bg-[#D4875E] text-[#0C0F14] px-7 py-2.5 rounded-md text-sm font-bold hover:bg-[#E09B75] transition-all btn-glow flex items-center gap-2">
+                  <i class="fa-solid fa-play"></i> Play All
+                </button>
+                <button class="bg-[#1A212C]/80 backdrop-blur-sm text-[#EEECE8] px-5 py-2.5 rounded-md text-sm font-medium hover:bg-[#232C3B] transition-all border border-[#2D384A]">
+                  <i class="fa-regular fa-bookmark mr-1.5"></i> Save
+                </button>
+                <button class="w-9 h-9 rounded-md bg-[#1A212C]/80 backdrop-blur-sm flex items-center justify-center hover:bg-[#232C3B] transition-all border border-[#2D384A]">
+                  <i class="fa-solid fa-ellipsis-h text-sm text-[#9BA3AF]"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category Pills -->
+          <div class="flex gap-2 mb-6 flex-wrap">
+            <span class="text-xs px-3.5 py-1.5 rounded-md bg-[#D4875E]/20 text-[#D4875E] border border-[#D4875E]/20 font-medium">All</span>
+            <span class="text-xs px-3.5 py-1.5 rounded-md bg-[#1A212C] text-[#9BA3AF] hover:bg-[#232C3B] hover:text-[#EEECE8] transition-all cursor-pointer border border-[#2D384A]">Rai</span>
+            <span class="text-xs px-3.5 py-1.5 rounded-md bg-[#1A212C] text-[#9BA3AF] hover:bg-[#232C3B] hover:text-[#EEECE8] transition-all cursor-pointer border border-[#2D384A]">Chaabi</span>
+            <span class="text-xs px-3.5 py-1.5 rounded-md bg-[#1A212C] text-[#9BA3AF] hover:bg-[#232C3B] hover:text-[#EEECE8] transition-all cursor-pointer border border-[#2D384A]">Kabyle</span>
+            <span class="text-xs px-3.5 py-1.5 rounded-md bg-[#1A212C] text-[#9BA3AF] hover:bg-[#232C3B] hover:text-[#EEECE8] transition-all cursor-pointer border border-[#2D384A]">Rap Dz</span>
+            <span class="text-xs px-3.5 py-1.5 rounded-md bg-[#1A212C] text-[#9BA3AF] hover:bg-[#232C3B] hover:text-[#EEECE8] transition-all cursor-pointer border border-[#2D384A]">Gnawa</span>
+            <span class="text-xs px-3.5 py-1.5 rounded-md bg-[#1A212C] text-[#9BA3AF] hover:bg-[#232C3B] hover:text-[#EEECE8] transition-all cursor-pointer border border-[#2D384A]">Top 50</span>
+            <span class="text-xs px-3.5 py-1.5 rounded-md bg-[#1A212C] text-[#9BA3AF] hover:bg-[#232C3B] hover:text-[#EEECE8] transition-all cursor-pointer border border-[#2D384A]">New</span>
+          </div>
+        </div>
+
+        <!-- ==================== FOR YOU SECTION ==================== -->
+        <section class="px-6 mb-7">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold section-title text-[#EEECE8]">For You</h2>
+            <a href="#" class="text-[11px] text-[#6B7280] hover:text-[#D4875E] transition-colors font-medium">See All</a>
+          </div>
+          <div class="grid grid-cols-8 gap-3">
+            <div class="group cursor-pointer">
+              <div class="relative mb-2 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=150&h=150&fit=crop" alt="Track" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay rounded-lg">
+                  <div class="play-icon w-9 h-9 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-xs ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs font-semibold truncate text-[#EEECE8]">Didi</p>
+              <p class="text-[10px] text-[#6B7280] truncate">Cheb Khaled</p>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=150&h=150&fit=crop" alt="Track" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay rounded-lg">
+                  <div class="play-icon w-9 h-9 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-xs ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs font-semibold truncate text-[#EEECE8]">Ya Rayah</p>
+              <p class="text-[10px] text-[#6B7280] truncate">Dahmane El Harrachi</p>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1511988617509-a57c8a288659?w=150&h=150&fit=crop" alt="Track" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay rounded-lg">
+                  <div class="play-icon w-9 h-9 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-xs ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs font-semibold truncate text-[#EEECE8]">A Vava Inouva</p>
+              <p class="text-[10px] text-[#6B7280] truncate">Idir</p>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1506157786151-b8491531f063?w=150&h=150&fit=crop" alt="Track" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay rounded-lg">
+                  <div class="play-icon w-9 h-9 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-xs ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs font-semibold truncate text-[#EEECE8]">El Harraga</p>
+              <p class="text-[10px] text-[#6B7280] truncate">Cheb Mami</p>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=150&h=150&fit=crop" alt="Track" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay rounded-lg">
+                  <div class="play-icon w-9 h-9 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-xs ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs font-semibold truncate text-[#EEECE8]">C'est la Vie</p>
+              <p class="text-[10px] text-[#6B7280] truncate">Cheb Khaled</p>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=150&h=150&fit=crop" alt="Track" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay rounded-lg">
+                  <div class="play-icon w-9 h-9 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-xs ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs font-semibold truncate text-[#EEECE8]">Aicha</p>
+              <p class="text-[10px] text-[#6B7280] truncate">Cheb Khaled</p>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150&h=150&fit=crop" alt="Track" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay rounded-lg">
+                  <div class="play-icon w-9 h-9 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-xs ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs font-semibold truncate text-[#EEECE8]">Ya Lella</p>
+              <p class="text-[10px] text-[#6B7280] truncate">Cheb Hasni</p>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c5a?w=150&h=150&fit=crop" alt="Track" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay rounded-lg">
+                  <div class="play-icon w-9 h-9 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-xs ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs font-semibold truncate text-[#EEECE8]">Wahran</p>
+              <p class="text-[10px] text-[#6B7280] truncate">Cheb Khaled</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TOP ARTISTS ==================== -->
+        <section class="px-6 mb-7">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold section-title text-[#EEECE8]">Top Artists</h2>
+            <a href="#" class="text-[11px] text-[#6B7280] hover:text-[#D4875E] transition-colors font-medium">See All</a>
+          </div>
+          <div class="grid grid-cols-6 gap-4">
+            <!-- Artist 1: Cheb Khaled -->
+            <div class="group text-center cursor-pointer">
+              <div class="relative mb-2.5 mx-auto w-full aspect-square rounded-xl overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=300&fit=crop&crop=face"
+                     alt="Cheb Khaled" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div class="absolute inset-0 bg-[#0C0F14]/40 flex items-center justify-center play-btn-overlay rounded-xl">
+                  <div class="play-icon w-11 h-11 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-sm ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm font-semibold truncate text-[#EEECE8]">Cheb Khaled</p>
+              <p class="text-[10px] text-[#D32F2F] font-medium">Rai</p>
+              <p class="text-[10px] text-[#6B7280]">12.5M Followers</p>
+            </div>
+            <!-- Artist 2: Cheb Hasni -->
+            <div class="group text-center cursor-pointer">
+              <div class="relative mb-2.5 mx-auto w-full aspect-square rounded-xl overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face"
+                     alt="Cheb Hasni" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div class="absolute inset-0 bg-[#0C0F14]/40 flex items-center justify-center play-btn-overlay rounded-xl">
+                  <div class="play-icon w-11 h-11 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-sm ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm font-semibold truncate text-[#EEECE8]">Cheb Hasni</p>
+              <p class="text-[10px] text-[#8B0000] font-medium">Rai</p>
+              <p class="text-[10px] text-[#6B7280]">8.2M Followers</p>
+            </div>
+            <!-- Artist 3: Cheb Mami -->
+            <div class="group text-center cursor-pointer">
+              <div class="relative mb-2.5 mx-auto w-full aspect-square rounded-xl overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=300&fit=crop&crop=face"
+                     alt="Cheb Mami" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div class="absolute inset-0 bg-[#0C0F14]/40 flex items-center justify-center play-btn-overlay rounded-xl">
+                  <div class="play-icon w-11 h-11 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-sm ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm font-semibold truncate text-[#EEECE8]">Cheb Mami</p>
+              <p class="text-[10px] text-[#C2185B] font-medium">Rai</p>
+              <p class="text-[10px] text-[#6B7280]">6.8M Followers</p>
+            </div>
+            <!-- Artist 4: Idir -->
+            <div class="group text-center cursor-pointer">
+              <div class="relative mb-2.5 mx-auto w-full aspect-square rounded-xl overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=300&fit=crop&crop=face"
+                     alt="Idir" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div class="absolute inset-0 bg-[#0C0F14]/40 flex items-center justify-center play-btn-overlay rounded-xl">
+                  <div class="play-icon w-11 h-11 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-sm ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm font-semibold truncate text-[#EEECE8]">Idir</p>
+              <p class="text-[10px] text-[#F5A623] font-medium">Kabyle</p>
+              <p class="text-[10px] text-[#6B7280]">4.1M Followers</p>
+            </div>
+            <!-- Artist 5: El Hadj El Anka -->
+            <div class="group text-center cursor-pointer">
+              <div class="relative mb-2.5 mx-auto w-full aspect-square rounded-xl overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop&crop=face"
+                     alt="El Anka" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div class="absolute inset-0 bg-[#0C0F14]/40 flex items-center justify-center play-btn-overlay rounded-xl">
+                  <div class="play-icon w-11 h-11 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-sm ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm font-semibold truncate text-[#EEECE8]">El Hadj El Anka</p>
+              <p class="text-[10px] text-[#006B3F] font-medium">Chaabi</p>
+              <p class="text-[10px] text-[#6B7280]">3.2M Followers</p>
+            </div>
+            <!-- Artist 6: Lotfi DK -->
+            <div class="group text-center cursor-pointer">
+              <div class="relative mb-2.5 mx-auto w-full aspect-square rounded-xl overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=300&h=300&fit=crop&crop=face"
+                     alt="Lotfi DK" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div class="absolute inset-0 bg-[#0C0F14]/40 flex items-center justify-center play-btn-overlay rounded-xl">
+                  <div class="play-icon w-11 h-11 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-sm ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm font-semibold truncate text-[#EEECE8]">Lotfi DK</p>
+              <p class="text-[10px] text-[#00ACC1] font-medium">Rap Dz</p>
+              <p class="text-[10px] text-[#6B7280]">3.4M Followers</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== NEW ALBUMS ==================== -->
+        <section class="px-6 mb-7">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold section-title text-[#EEECE8]">New Releases</h2>
+            <a href="#" class="text-[11px] text-[#6B7280] hover:text-[#D4875E] transition-colors font-medium">See All</a>
+          </div>
+          <div class="grid grid-cols-5 gap-4">
+            <div class="group cursor-pointer">
+              <div class="relative mb-2.5 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c5a?w=300&h=300&fit=crop" alt="Album" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay">
+                  <div class="play-icon w-12 h-12 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-base ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm font-semibold truncate text-[#EEECE8]">Sahara Grooves</p>
+              <p class="text-xs text-[#6B7280] truncate">Various · 2025</p>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2.5 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&h=300&fit=crop" alt="Album" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay">
+                  <div class="play-icon w-12 h-12 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-base ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm font-semibold truncate text-[#EEECE8]">Cheb Khaled — Vol.1</p>
+              <p class="text-xs text-[#6B7280] truncate">Cheb Khaled · 2025</p>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2.5 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop" alt="Album" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay">
+                  <div class="play-icon w-12 h-12 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-base ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm font-semibold truncate text-[#EEECE8]">Gnawa Nights</p>
+              <p class="text-xs text-[#6B7280] truncate">Various · 2024</p>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2.5 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=300&fit=crop" alt="Album" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay">
+                  <div class="play-icon w-12 h-12 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-base ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm font-semibold truncate text-[#EEECE8]">Cheb Hasni — Best Of</p>
+              <p class="text-xs text-[#6B7280] truncate">Cheb Hasni · 2025</p>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2.5 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop" alt="Album" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center play-btn-overlay">
+                  <div class="play-icon w-12 h-12 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-base ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm font-semibold truncate text-[#EEECE8]">Algerian Rap Vol.1</p>
+              <p class="text-xs text-[#6B7280] truncate">Various · 2025</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== MOOD PLAYLISTS ==================== -->
+        <section class="px-6 mb-7">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold section-title text-[#EEECE8]">Mood & Moments</h2>
+            <a href="#" class="text-[11px] text-[#6B7280] hover:text-[#D4875E] transition-colors font-medium">See All</a>
+          </div>
+          <div class="grid grid-cols-4 gap-4">
+            <div class="group cursor-pointer">
+              <div class="relative mb-2.5 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=300&h=300&fit=crop" alt="Playlist" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0C0F14]/80 via-transparent to-transparent"></div>
+                <div class="absolute inset-0 bg-black/20 flex items-center justify-center play-btn-overlay">
+                  <div class="play-icon w-12 h-12 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-base ml-0.5"></i>
+                  </div>
+                </div>
+                <div class="absolute bottom-2.5 left-3 right-3 z-10">
+                  <p class="text-sm font-bold drop-shadow-lg text-[#EEECE8]">Rai Classics</p>
+                  <p class="text-[10px] text-[#9BA3AF]">The legends of Rai</p>
+                </div>
+              </div>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2.5 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=300&h=300&fit=crop" alt="Playlist" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0C0F14]/80 via-transparent to-transparent"></div>
+                <div class="absolute inset-0 bg-black/20 flex items-center justify-center play-btn-overlay">
+                  <div class="play-icon w-12 h-12 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-base ml-0.5"></i>
+                  </div>
+                </div>
+                <div class="absolute bottom-2.5 left-3 right-3 z-10">
+                  <p class="text-sm font-bold drop-shadow-lg text-[#EEECE8]">Chaabi Essentials</p>
+                  <p class="text-[10px] text-[#9BA3AF]">Traditional Algerian sound</p>
+                </div>
+              </div>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2.5 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1511988617509-a57c8a288659?w=300&h=300&fit=crop" alt="Playlist" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0C0F14]/80 via-transparent to-transparent"></div>
+                <div class="absolute inset-0 bg-black/20 flex items-center justify-center play-btn-overlay">
+                  <div class="play-icon w-12 h-12 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-base ml-0.5"></i>
+                  </div>
+                </div>
+                <div class="absolute bottom-2.5 left-3 right-3 z-10">
+                  <p class="text-sm font-bold drop-shadow-lg text-[#EEECE8]">Kabyle Nights</p>
+                  <p class="text-[10px] text-[#9BA3AF]">Amazigh melodies</p>
+                </div>
+              </div>
+            </div>
+            <div class="group cursor-pointer">
+              <div class="relative mb-2.5 rounded-lg overflow-hidden card-hover">
+                <img src="https://images.unsplash.com/photo-1506157786151-b8491531f063?w=300&h=300&fit=crop" alt="Playlist" class="w-full aspect-square object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0C0F14]/80 via-transparent to-transparent"></div>
+                <div class="absolute inset-0 bg-black/20 flex items-center justify-center play-btn-overlay">
+                  <div class="play-icon w-12 h-12 rounded-md bg-[#D4875E] flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(212,135,94,0.4);">
+                    <i class="fa-solid fa-play text-[#0C0F14] text-base ml-0.5"></i>
+                  </div>
+                </div>
+                <div class="absolute bottom-2.5 left-3 right-3 z-10">
+                  <p class="text-sm font-bold drop-shadow-lg text-[#EEECE8]">Rap Dz Cypher</p>
+                  <p class="text-[10px] text-[#9BA3AF]">Algerian hip-hop</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== RECENTLY PLAYED ==================== -->
+        <section class="px-6 mb-10">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold section-title text-[#EEECE8]">Recently Played</h2>
+            <a href="#" class="text-[11px] text-[#6B7280] hover:text-[#D4875E] transition-colors font-medium">See All</a>
+          </div>
+          <div class="space-y-0.5">
+            <!-- Track 1 -->
+            <div class="track-row flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer">
+              <span class="text-xs text-[#6B7280] w-5 text-right">1</span>
+              <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c5a?w=44&h=44&fit=crop" alt="Track" class="w-9 h-9 rounded object-cover" />
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate text-[#EEECE8]">Didi</p>
+                <p class="text-xs text-[#6B7280] truncate">Cheb Khaled</p>
+              </div>
+              <span class="text-[11px] text-[#D32F2F] font-medium px-1.5 py-0.5 rounded bg-[#D32F2F]/10">Rai</span>
+              <p class="text-xs text-[#6B7280]">5:12</p>
+              <i class="fa-regular fa-heart text-[#6B7280] hover:text-[#D4875E] transition-colors text-sm opacity-0 group-hover:opacity-100"></i>
+            </div>
+            <!-- Track 2 -->
+            <div class="track-row flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer">
+              <span class="text-xs text-[#6B7280] w-5 text-right">2</span>
+              <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=44&h=44&fit=crop" alt="Track" class="w-9 h-9 rounded object-cover" />
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate text-[#EEECE8]">A Vava Inouva</p>
+                <p class="text-xs text-[#6B7280] truncate">Idir</p>
+              </div>
+              <span class="text-[11px] text-[#F5A623] font-medium px-1.5 py-0.5 rounded bg-[#F5A623]/10">Kabyle</span>
+              <p class="text-xs text-[#6B7280]">4:28</p>
+              <i class="fa-solid fa-heart text-[#D4875E] text-sm"></i>
+            </div>
+            <!-- Track 3 -->
+            <div class="track-row flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer">
+              <span class="text-xs text-[#6B7280] w-5 text-right">3</span>
+              <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=44&h=44&fit=crop" alt="Track" class="w-9 h-9 rounded object-cover" />
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate text-[#EEECE8]">Ya Rayah</p>
+                <p class="text-xs text-[#6B7280] truncate">Dahmane El Harrachi</p>
+              </div>
+              <span class="text-[11px] text-[#006B3F] font-medium px-1.5 py-0.5 rounded bg-[#006B3F]/10">Chaabi</span>
+              <p class="text-xs text-[#6B7280]">4:42</p>
+              <i class="fa-regular fa-heart text-[#6B7280] hover:text-[#D4875E] transition-colors text-sm opacity-0 group-hover:opacity-100"></i>
+            </div>
+            <!-- Track 4 -->
+            <div class="track-row flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer">
+              <span class="text-xs text-[#6B7280] w-5 text-right">4</span>
+              <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=44&h=44&fit=crop" alt="Track" class="w-9 h-9 rounded object-cover" />
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate text-[#EEECE8]">C'est la Vie</p>
+                <p class="text-xs text-[#6B7280] truncate">Cheb Khaled</p>
+              </div>
+              <span class="text-[11px] text-[#D32F2F] font-medium px-1.5 py-0.5 rounded bg-[#D32F2F]/10">Rai</span>
+              <p class="text-xs text-[#6B7280]">4:50</p>
+              <i class="fa-regular fa-heart text-[#6B7280] hover:text-[#D4875E] transition-colors text-sm opacity-0 group-hover:opacity-100"></i>
+            </div>
+            <!-- Track 5 -->
+            <div class="track-row flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer">
+              <span class="text-xs text-[#6B7280] w-5 text-right">5</span>
+              <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=44&h=44&fit=crop" alt="Track" class="w-9 h-9 rounded object-cover" />
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate text-[#EEECE8]">Ya Lella</p>
+                <p class="text-xs text-[#6B7280] truncate">Cheb Hasni</p>
+              </div>
+              <span class="text-[11px] text-[#8B0000] font-medium px-1.5 py-0.5 rounded bg-[#8B0000]/10">Rai</span>
+              <p class="text-xs text-[#6B7280]">5:01</p>
+              <i class="fa-regular fa-heart text-[#6B7280] hover:text-[#D4875E] transition-colors text-sm opacity-0 group-hover:opacity-100"></i>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer Spacer for player -->
+        <div class="h-4"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============ BOTTOM PLAYER BAR ============ -->
+  <div class="glass-player fixed bottom-0 left-0 right-0 px-4 flex items-center justify-between z-50" style="height:72px;">
+
+    <!-- Left: Now Playing Info -->
+    <div class="flex items-center gap-3 w-64 min-w-[180px]">
+      <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c5a?w=48&h=48&fit=crop"
+           alt="Now Playing" class="w-10 h-10 rounded object-cover shadow-lg" />
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-semibold truncate text-[#EEECE8] hover:text-[#D4875E] transition-colors cursor-pointer">Didi</p>
+        <p class="text-[10px] text-[#6B7280] truncate flex items-center gap-1">
+          Cheb Khaled
+          <span class="text-[7px] font-bold text-[#4A9BAA] bg-[#4A9BAA]/15 px-1 py-0.5 rounded uppercase tracking-wider live-dot">Live</span>
+        </p>
+      </div>
+      <div class="flex gap-1.5 ml-1">
+        <i class="fa-regular fa-heart text-[#6B7280] hover:text-[#D4875E] transition-colors cursor-pointer text-sm"></i>
+        <i class="fa-regular fa-circle-check text-[#6B7280] hover:text-[#D4875E] transition-colors cursor-pointer text-sm"></i>
+      </div>
+    </div>
+
+    <!-- Center: Controls -->
+    <div class="flex flex-col items-center flex-1 max-w-sm">
+      <div class="flex items-center gap-4 mb-1">
+        <button class="text-[#6B7280] hover:text-[#EEECE8] transition-colors text-xs p-1 rounded hover:bg-[#1A212C]">
+          <i class="fa-solid fa-shuffle"></i>
+        </button>
+        <button class="text-[#9BA3AF] hover:text-[#EEECE8] transition-colors text-sm p-1 rounded hover:bg-[#1A212C]">
+          <i class="fa-solid fa-backward-step"></i>
+        </button>
+        <button class="w-8 h-8 rounded-md bg-[#D4875E] text-[#0C0F14] flex items-center justify-center hover:bg-[#E09B75] transition-all font-bold text-sm" style="box-shadow: 0 0 16px rgba(212,135,94,0.25);">
+          <i class="fa-solid fa-pause"></i>
+        </button>
+        <button class="text-[#9BA3AF] hover:text-[#EEECE8] transition-colors text-sm p-1 rounded hover:bg-[#1A212C]">
+          <i class="fa-solid fa-forward-step"></i>
+        </button>
+        <button class="text-[#6B7280] hover:text-[#EEECE8] transition-colors text-xs p-1 rounded hover:bg-[#1A212C]">
+          <i class="fa-solid fa-repeat"></i>
+        </button>
+      </div>
+      <div class="flex items-center gap-2 w-full">
+        <span class="text-[8px] text-[#6B7280] w-8 text-right tabular-nums">1:24</span>
+        <div class="flex-1 h-1 bg-[#232C3B] rounded-full cursor-pointer group relative overflow-hidden">
+          <div class="progress-fill h-full rounded-full w-2/5 relative transition-all">
+            <div class="absolute right-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#D4875E] rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md"></div>
+          </div>
+        </div>
+        <span class="text-[8px] text-[#6B7280] w-8 tabular-nums">5:12</span>
+      </div>
+    </div>
+
+    <!-- Right: Volume & Extras -->
+    <div class="flex items-center gap-2.5 w-64 justify-end">
+      <button class="p-1.5 text-[#6B7280] hover:text-[#EEECE8] transition-colors rounded hover:bg-[#1A212C] text-xs">
+        <i class="fa-solid fa-microphone"></i>
+      </button>
+      <button class="p-1.5 text-[#6B7280] hover:text-[#EEECE8] transition-colors rounded hover:bg-[#1A212C] text-xs">
+        <i class="fa-solid fa-list"></i>
+      </button>
+      <button class="p-1.5 text-[#6B7280] hover:text-[#EEECE8] transition-colors rounded hover:bg-[#1A212C] text-xs md:block hidden">
+        <i class="fa-solid fa-desktop"></i>
+      </button>
+      <div class="flex items-center gap-1.5">
+        <i class="fa-solid fa-volume-high text-[#6B7280] hover:text-[#EEECE8] transition-colors cursor-pointer text-xs"></i>
+        <div class="w-16 h-1 bg-[#232C3B] rounded-full cursor-pointer group relative overflow-hidden">
+          <div class="bg-[#9BA3AF] h-full rounded-full w-3/4 group-hover:bg-[#D4875E] transition-colors relative">
+            <div class="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow"></div>
+          </div>
+        </div>
+      </div>
+      <div class="w-px h-5 bg-[#232C3B] mx-0.5"></div>
+      <button class="relative p-1.5 text-[#6B7280] hover:text-[#D4875E] transition-colors rounded hover:bg-[#1A212C] text-xs">
+        <i class="fa-solid fa-up-right-from-square"></i>
+      </button>
+    </div>
+  </div>
+
+</body>
+</html>
