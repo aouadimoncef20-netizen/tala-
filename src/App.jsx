@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import './App.css';
+import './index.css';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import MainContent from './components/MainContent';
@@ -10,12 +10,12 @@ import PremiumView from './components/PremiumView';
 import Toast from './components/Toast';
 import { generateTone } from './components/LazyImage';
 import { generateRadioStream } from './data/recommendations';
+import useAuthStore from './stores/authStore';
 import usePlayerStore from './stores/playerStore';
 import useUIStore from './stores/uiStore';
 import useLibraryStore from './stores/libraryStore';
 
 const App = () => {
-  // --- Subscribe to slices from all stores ---
   const currentTrack = usePlayerStore(s => s.currentTrack);
   const isPlaying = usePlayerStore(s => s.isPlaying);
   const isSimulated = usePlayerStore(s => s.isSimulated);
@@ -34,56 +34,42 @@ const App = () => {
   const setShowPremium = useUIStore(s => s.setShowPremium);
 
   const theme = useLibraryStore(s => s.theme);
+  const user = useAuthStore(s => s.user);
+  const profile = useAuthStore(s => s.profile);
+  const loadLikes = useLibraryStore(s => s.loadLikes);
 
   const isRadio = currentTrack?.type === 'radio';
 
-  // --- Refs ---
   const audioRef = useRef(null);
   const simRef = useRef(null);
   const toneUrlRef = useRef(null);
   const sleepRef = useRef(null);
-  const [scrolled, setScrolled] = React.useState(false);
 
-  // --- Audio element (one-time setup) ---
   useEffect(() => {
     const audio = new Audio();
     audio.crossOrigin = 'anonymous';
     audioRef.current = audio;
     const onEnded = () => {
       const st = usePlayerStore.getState();
-      // If sleep timer triggered the stop, don't auto-play next
       if (st.wasSleepTimerTriggered) {
         usePlayerStore.setState({ wasSleepTimerTriggered: false, isPlaying: false });
         return;
       }
-      // Radio mode: play next from radio queue or generate more
       if (st.isRadioMode) {
         if (st.radioQueue.length > 0) {
           const next = st.radioQueue[0];
           usePlayerStore.setState({
-            currentTrack: next,
-            isPlaying: true,
-            radioQueue: st.radioQueue.slice(1),
-            simulatedTime: 0,
-            currentTime: 0,
-            isSimulated: true,
+            currentTrack: next, isPlaying: true, radioQueue: st.radioQueue.slice(1),
+            simulatedTime: 0, currentTime: 0, isSimulated: true,
           });
         } else {
-          // Radio queue exhausted — generate more tracks
           const seed = st.currentTrack?.artistId || 'khaled';
-          const moreTracks = generateRadioStream(
-            st.currentTrack?.id || 'track_khaled_0',
-            20
-          );
+          const moreTracks = generateRadioStream(st.currentTrack?.id || 'track_khaled_0', 20);
           if (moreTracks.length > 0) {
             const next = moreTracks[0];
             usePlayerStore.setState({
-              currentTrack: next,
-              isPlaying: true,
-              radioQueue: moreTracks.slice(1),
-              simulatedTime: 0,
-              currentTime: 0,
-              isSimulated: true,
+              currentTrack: next, isPlaying: true, radioQueue: moreTracks.slice(1),
+              simulatedTime: 0, currentTime: 0, isSimulated: true,
             });
           } else {
             usePlayerStore.setState({ isPlaying: false, isRadioMode: false });
@@ -91,16 +77,11 @@ const App = () => {
         }
         return;
       }
-      // Normal queue mode
       if (st.queue.length > 0) {
         const next = st.queue[0];
         usePlayerStore.setState({
-          currentTrack: next,
-          isPlaying: true,
-          queue: st.queue.slice(1),
-          simulatedTime: 0,
-          currentTime: 0,
-          isSimulated: true,
+          currentTrack: next, isPlaying: true, queue: st.queue.slice(1),
+          simulatedTime: 0, currentTime: 0, isSimulated: true,
         });
       } else {
         setPlaying(false);
@@ -108,10 +89,8 @@ const App = () => {
     };
     audio.addEventListener('ended', onEnded);
     return () => { audio.removeEventListener('ended', onEnded); audio.pause(); if (toneUrlRef.current) URL.revokeObjectURL(toneUrlRef.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // --- Generate real audio tone for each track ---
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -130,12 +109,10 @@ const App = () => {
     }
   }, [isPlaying, currentTrack, isRadio, setSimulated]);
 
-  // --- Volume ---
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = isMuted ? 0 : volume / 100;
   }, [volume, isMuted]);
 
-  // --- Simulated playback (non-radio) ---
   useEffect(() => {
     if (isPlaying && currentTrack && isSimulated && !isRadio) {
       simRef.current = setInterval(() => {
@@ -148,9 +125,7 @@ const App = () => {
             total = parts.length === 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2]
               : parts.length === 2 ? parts[0] * 60 + parts[1] : 1200;
           }
-          return {
-            simulatedTime: s.simulatedTime >= total ? total : s.simulatedTime + (1 * s.playbackSpeed)
-          };
+          return { simulatedTime: s.simulatedTime >= total ? total : s.simulatedTime + (1 * s.playbackSpeed) };
         });
       }, 1000);
     } else {
@@ -159,24 +134,19 @@ const App = () => {
     return () => clearInterval(simRef.current);
   }, [isPlaying, currentTrack, isSimulated, playbackSpeed, isRadio]);
 
-  // --- Simulated playback (radio — wraps around) ---
   useEffect(() => {
     if (isPlaying && currentTrack && isSimulated && isRadio) {
       simRef.current = setInterval(() => {
-        usePlayerStore.setState(s => ({
-          simulatedTime: (s.simulatedTime + (1 * s.playbackSpeed)) % 3600
-        }));
+        usePlayerStore.setState(s => ({ simulatedTime: (s.simulatedTime + (1 * s.playbackSpeed)) % 3600 }));
       }, 1000);
     }
     return () => clearInterval(simRef.current);
   }, [isPlaying, currentTrack, isSimulated, playbackSpeed, isRadio]);
 
-  // --- Reset time on track change ---
-  useEffect(() => {
-    usePlayerStore.getState().resetTime();
-  }, [currentTrack?.id]);
+  useEffect(() => { if (user?.id) loadLikes(user.id); }, [user?.id, loadLikes]);
 
-  // --- Sleep Timer ---
+  useEffect(() => { usePlayerStore.getState().resetTime(); }, [currentTrack?.id]);
+
   const sleepTimerActive = sleepTimer !== null && sleepTimer > 0;
 
   useEffect(() => {
@@ -196,32 +166,17 @@ const App = () => {
       clearInterval(sleepRef.current);
     }
     return () => clearInterval(sleepRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sleepTimerActive, isPlaying]);
 
-  // --- Keyboard shortcuts ---
   useEffect(() => {
     const handleKey = (e) => {
       if (e.target.tagName === 'INPUT') return;
       const store = usePlayerStore.getState();
       switch (e.code) {
-        case 'Space':
-          e.preventDefault();
-          if (store.currentTrack) store.togglePlay();
-          break;
-        case 'ArrowLeft':
-          e.preventDefault();
-          if (store.currentTrack) store.skipTime(-15);
-          break;
-        case 'ArrowRight':
-          e.preventDefault();
-          if (store.currentTrack) store.skipTime(15);
-          break;
-        case 'KeyM':
-          break;
-        case 'Escape':
-          store.setShowFullPlayer(false);
-          break;
+        case 'Space': e.preventDefault(); if (store.currentTrack) store.togglePlay(); break;
+        case 'ArrowLeft': e.preventDefault(); if (store.currentTrack) store.skipTime(-15); break;
+        case 'ArrowRight': e.preventDefault(); if (store.currentTrack) store.skipTime(15); break;
+        case 'Escape': store.setShowFullPlayer(false); break;
         default: break;
       }
     };
@@ -229,15 +184,12 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
-  // --- Media Session API — lock screen / notification controls ---
   useEffect(() => {
     if (!currentTrack) return;
     if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
-        title: currentTrack.title,
-        artist: currentTrack.artist || currentTrack.podcastName || '',
-        album: '',
-        artwork: [{ src: currentTrack.image, sizes: '512x512', type: 'image/jpeg' }],
+        title: currentTrack.title, artist: currentTrack.artist || currentTrack.podcastName || '',
+        album: '', artwork: [{ src: currentTrack.image, sizes: '512x512', type: 'image/jpeg' }],
       });
       navigator.mediaSession.setActionHandler('play', () => usePlayerStore.getState().setPlaying(true));
       navigator.mediaSession.setActionHandler('pause', () => usePlayerStore.getState().setPlaying(false));
@@ -246,37 +198,21 @@ const App = () => {
     }
   }, [currentTrack]);
 
-  // --- Scroll listener for MiniPlayer ---
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 200);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
-    <div className="app" data-theme={theme}>
-      {/* Screen reader announcement for track changes */}
+    <div className="app flex flex-col h-screen bg-[var(--bg-primary)] overflow-hidden" data-theme={theme}>
       <div aria-live="polite" className="sr-only">
         {currentTrack ? `Now playing: ${currentTrack.title} by ${currentTrack.artist || currentTrack.podcastName}` : ''}
       </div>
-      <div className={`app__main ${showFullPlayer ? 'app__main--blurred' : ''}`}>
-        <div className="app__content">
+      <div className={`flex flex-1 overflow-hidden pb-[var(--player-height)] ${showFullPlayer ? 'opacity-30 pointer-events-none' : ''}`}>
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <Header />
           <MainContent />
         </div>
         <Sidebar />
       </div>
-
       {showFullPlayer && <FullPlayer />}
-
-      {showPremium && (
-        <PremiumView onClose={() => setShowPremium(false)} />
-      )}
-
+      {showPremium && <PremiumView onClose={() => setShowPremium(false)} />}
       <Toast />
-
-      <MiniPlayer visible={!!currentTrack && scrolled} />
-
       <PlayerBar />
     </div>
   );

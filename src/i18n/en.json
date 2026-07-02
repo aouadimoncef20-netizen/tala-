@@ -94,6 +94,19 @@
     "following": "Following",
     "joined": "Joined",
     "recentlyPlayed": "Recently Played",
-    "subtitle": "Your listening world"
+    "subtitle": "Your listening world",
+    "signOut": "Sign Out"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Create Account",
+    "email": "Email",
+    "password": "Password",
+    "google": "Continue with Google",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signOut": "Sign Out",
+    "welcomeBack": "Welcome back",
+    "welcome": "Welcome to Tala"
   }
 }

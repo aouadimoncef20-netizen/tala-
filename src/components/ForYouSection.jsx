@@ -1,8 +1,7 @@
-﻿import React from 'react';
+import React from 'react';
 import { getForYou, getRecentlyAdded, getTrendingTracks } from '../data/recommendations';
 import usePlayerStore from '../stores/playerStore';
 import useLibraryStore from '../stores/libraryStore';
-import './ForYouSection.css';
 
 const ForYouSection = () => {
   const likedTrackIds = useLibraryStore(s => s.likedTracks);
@@ -19,81 +18,62 @@ const ForYouSection = () => {
     playOrToggle({ ...track, podcastName: track.artist, podcastId: track.artistId });
   };
 
-  const renderScroll = (tracks) => (
-    <div className="foryou-scroll">
-      {tracks.map((track, i) => (
-        <div
-          key={track.id}
-          className={`foryou-card ${isActive(track.id) ? 'foryou-card--active' : ''}`}
-          onClick={() => playTrack(track)}
-          tabIndex={0}
-          role="button"
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playTrack(track); } }}
-          style={{ animationDelay: `${i * 0.04}s` }}
-        >
-          <div className="foryou-card__img-wrap">
-            <img className="foryou-card__img" src={track.image} alt={track.title} loading="lazy" />
-            <div className="foryou-card__play">
-              {isActive(track.id) ? (
-                <svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-              ) : (
-                <svg viewBox="0 0 24 24"><path d="M5.7 3a.7.7 0 00-.7.7v16.6a.7.7 0 001.12.56l12.8-8.3a.7.7 0 000-1.12l-12.8-8.3A.7.7 0 005.7 3z"/></svg>
-              )}
-            </div>
-            {isActive(track.id) && <div className="foryou-card__eq"><span></span><span></span><span></span><span></span></div>}
-          </div>
-          <div className="foryou-card__body">
-            <div className="foryou-card__title">{track.title}</div>
-            <div className="foryou-card__artist">{track.artist}</div>
-          </div>
+  const renderScroll = (tracks, title, subtitle) => (
+    <section className="px-5 mt-7">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <span className="text-base font-bold section-title text-[var(--text-primary)]">{title}</span>
+          <span className="text-[11px] text-[var(--text-subdued)] ml-2">{subtitle}</span>
         </div>
-      ))}
-    </div>
+      </div>
+      {tracks.length === 0 ? (
+        <div className="py-5 text-center">
+          <div className="text-sm text-[var(--text-subdued)]">Like some tracks to get personalized recommendations</div>
+        </div>
+      ) : (
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+          {tracks.map((track, i) => (
+            <div
+              key={track.id}
+              className={`min-w-[120px] max-w-[120px] cursor-pointer group animate-fade-in-up ${isActive(track.id) ? 'opacity-100' : ''}`}
+              onClick={() => playTrack(track)}
+              tabIndex={0} role="button"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playTrack(track); } }}
+              style={{ animationDelay: `${i * 0.04}s` }}
+            >
+              <div className="relative rounded-[var(--radius-md)] overflow-hidden mb-1.5">
+                <img className="w-full aspect-square object-cover" src={track.image} alt={track.title} loading="lazy" />
+                <div className="absolute bottom-1.5 right-1.5 w-7 h-7 rounded-md bg-[#D4875E] flex items-center justify-center shadow transition-transform duration-200 hover:scale-110">
+                  {isActive(track.id) ? (
+                    <i className="fa-solid fa-pause text-[#0C0F14] text-xs"></i>
+                  ) : (
+                    <i className="fa-solid fa-play text-[#0C0F14] text-xs ml-0.5"></i>
+                  )}
+                </div>
+                {isActive(track.id) && (
+                  <div className="absolute bottom-1.5 left-1.5 flex items-end gap-[2px] h-3">
+                    {[1,2,3,4].map(i => (
+                      <span key={i} className="w-[2px] bg-[#D4875E] rounded-sm eq-bar" style={{height:'6px', animation:'eq 0.8s ease-in-out infinite alternate', animationDelay:`${i*0.2}s`}}></span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="text-[11px] font-semibold text-[var(--text-primary)] truncate">{track.title}</div>
+              <div className="text-[9px] text-[var(--text-subdued)] truncate">{track.artist}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 
   return (
-    <div className="foryou-section">
-      {/* Made for You */}
-      <section className="section">
-        <div className="section__head">
-          <div>
-            <span className="section__title">Made for You</span>
-            <span className="section__count">personalized picks</span>
-          </div>
-        </div>
-        {forYouTracks.length === 0 ? (
-          <div className="empty-state" style={{ padding: '20px' }}>
-            <div className="empty-state__text">Like some tracks to get personalized recommendations</div>
-          </div>
-        ) : (
-          renderScroll(forYouTracks)
-        )}
-      </section>
-
-      {/* Recently Added */}
-      <section className="section">
-        <div className="section__head">
-          <div>
-            <span className="section__title">Recently Added</span>
-            <span className="section__count">fresh tracks</span>
-          </div>
-        </div>
-        {renderScroll(recentlyAdded)}
-      </section>
-
-      {/* Trending */}
-      <section className="section">
-        <div className="section__head">
-          <div>
-            <span className="section__title">Trending</span>
-            <span className="section__count">popular now</span>
-          </div>
-        </div>
-        {renderScroll(trendingTracks)}
-      </section>
+    <div>
+      {renderScroll(forYouTracks, 'Made for You', 'personalized picks')}
+      {renderScroll(recentlyAdded, 'Recently Added', 'fresh tracks')}
+      {renderScroll(trendingTracks, 'Trending', 'popular now')}
     </div>
   );
 };
 
 export default ForYouSection;
-

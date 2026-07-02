@@ -1,8 +1,6 @@
-﻿import React, { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import useUIStore from '../stores/uiStore';
-import './MainContent.css';
 
-// Lazy-load all view components
 const LazyHomeView = React.lazy(() => import('./HomeView'));
 const LazyExploreView = React.lazy(() => import('./ExploreView'));
 const LazyRadioView = React.lazy(() => import('./RadioView'));
@@ -18,9 +16,9 @@ const LazyStatsView = React.lazy(() => import('./StatsView'));
 const LazyUploadForm = React.lazy(() => import('./UploadForm'));
 
 const LoadingFallback = () => (
-  <div className="loading-state" style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-subdued)' }}>
-    <div style={{ fontSize: 24, marginBottom: 8 }}>â—Œ</div>
-    <div style={{ fontSize: 13 }}>Loading...</div>
+  <div className="py-16 px-5 text-center text-[var(--text-subdued)]">
+    <i className="fa-solid fa-circle-notch text-2xl mb-2 animate-spin"></i>
+    <div className="text-sm">Loading...</div>
   </div>
 );
 
@@ -33,46 +31,27 @@ const MainContent = () => {
 
   const renderView = () => {
     switch (activeView) {
-      case 'home':
-        return <LazyHomeView />;
-      case 'explore':
-        return <LazyExploreView />;
-      case 'search':
-        return <LazySearchResults query={searchQuery} />;
-      case 'radio':
-        return <LazyRadioView />;
-      case 'podcasts':
-        return <LazyPodcastView />;
-      case 'library':
-        return <LazyLibraryView />;
-      case 'playlists':
-        return <LazyPlaylistView />;
-      case 'audiobooks':
-        return <LazyAudiobookView />;
-      case 'profile':
-        return <LazyProfileView />;
-      case 'stats':
-        return <LazyStatsView />;
-      case 'upload':
-        return <LazyUploadForm />;
-      case 'artist':
-        return <LazyArtistDetail artistId={selectedArtist} />;
-      case 'album':
-        return <LazyAlbumDetail albumId={selectedAlbum} />;
+      case 'home': return <LazyHomeView />;
+      case 'explore': return <LazyExploreView />;
+      case 'search': return <LazySearchResults query={searchQuery} />;
+      case 'radio': return <LazyRadioView />;
+      case 'podcasts': return <LazyPodcastView />;
+      case 'library': return <LazyLibraryView />;
+      case 'playlists': return <LazyPlaylistView />;
+      case 'audiobooks': return <LazyAudiobookView />;
+      case 'profile': return <LazyProfileView />;
+      case 'stats': return <LazyStatsView />;
+      case 'upload': return <LazyUploadForm />;
+      case 'artist': return <LazyArtistDetail artistId={selectedArtist} />;
+      case 'album': return <LazyAlbumDetail albumId={selectedAlbum} />;
       default:
         return (
-          <div className="empty-state" style={{ padding: '80px 20px', textAlign: 'center' }}>
-            <div className="empty-state__icon" style={{ fontSize: 48, marginBottom: 12 }}>ðŸ”</div>
-            <div className="empty-state__text" style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Page not found</div>
-            <div className="empty-state__sub" style={{ fontSize: 13, color: 'var(--text-subdued)', marginBottom: 20 }}>
-              The view "{activeView}" doesn't exist.
-            </div>
-            <button
-              className="hero__btn"
-              onClick={() => setActiveView('home')}
-              style={{ display: 'inline-flex' }}
-            >
-              â—‡ Go Home
+          <div className="py-20 px-5 text-center">
+            <i className="fa-solid fa-magnifying-glass text-5xl mb-3 text-[var(--text-subdued)]"></i>
+            <div className="text-lg font-semibold mb-2 text-[var(--text-primary)]">Page not found</div>
+            <div className="text-sm text-[var(--text-subdued)] mb-5">The view "{activeView}" doesn't exist.</div>
+            <button className="bg-[#D4875E] text-[#0C0F14] px-5 py-2.5 rounded-md text-sm font-bold hover:bg-[#E09B75] transition-all inline-flex items-center gap-2" onClick={() => setActiveView('home')}>
+              <i className="fa-solid fa-house"></i> Go Home
             </button>
           </div>
         );
@@ -80,7 +59,7 @@ const MainContent = () => {
   };
 
   return (
-    <main className="main-content">
+    <main className="flex-1 overflow-y-auto bg-[var(--bg-primary)]">
       <Suspense fallback={<LoadingFallback />}>
         {renderView()}
       </Suspense>
@@ -89,4 +68,3 @@ const MainContent = () => {
 };
 
 export default MainContent;
-

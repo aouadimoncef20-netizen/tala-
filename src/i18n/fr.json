@@ -94,6 +94,19 @@
     "following": "Abonnements",
     "joined": "Inscrit",
     "recentlyPlayed": "Récemment écoutés",
-    "subtitle": "Votre univers d'écoute"
+    "subtitle": "Votre univers d'écoute",
+    "signOut": "Déconnexion"
+  },
+  "auth": {
+    "signIn": "Se connecter",
+    "signUp": "Créer un compte",
+    "email": "Email",
+    "password": "Mot de passe",
+    "google": "Continuer avec Google",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Déjà un compte ?",
+    "signOut": "Déconnexion",
+    "welcomeBack": "Bon retour",
+    "welcome": "Bienvenue sur Tala"
   }
 }
